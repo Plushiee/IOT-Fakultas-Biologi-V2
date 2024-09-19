@@ -10,13 +10,12 @@ class MainController extends Controller
 {
     public function dashboard()
     {
-    $pompaStatus = TabelPompaModel::orderBy('created_at', 'desc')->first();
+        $pompaStatus = TabelPompaModel::latest()->first();
         if ($pompaStatus == null) {
-            $pompaStatus = (object) [
-                'status' => 'mati',
-                'suhu' => 0,
-                'otomatis' => false
-            ];
+            $pompaStatus = new TabelPompaModel();
+            $pompaStatus->status = 'mati';
+            $pompaStatus->otomatis = false;
+            $pompaStatus->suhu = 0;
         }
         return view('main.dashboard', compact('pompaStatus'));
     }

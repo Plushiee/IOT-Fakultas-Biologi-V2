@@ -23,7 +23,7 @@
 </head>
 
 <body>
-    @vite('resources/js/app.js')
+    {{-- @vite('resources/js/app.js') --}}
     <div id="wrapper">
         <!-- navbar -->
         @include('main.templates.navbar')

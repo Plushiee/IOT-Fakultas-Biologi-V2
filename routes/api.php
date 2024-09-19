@@ -16,3 +16,8 @@ Route::post('/get/arusair', [ApiController::class, 'getArusAir'])->name('api.get
 
 // API POST Start
 Route::post('/post/pompa', [ApiController::class, 'postPompa'])->name('api.post.pompa');
+// API POST End
+
+// API Dashboard Start
+Route::get('/get/dashboard', [ApiController::class, 'getDashboard'])->name('api.get.dashboard');
+// API Dashboard End

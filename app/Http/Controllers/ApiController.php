@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\TabelArusAirModel;
+use App\Models\TabelPingModel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
@@ -23,6 +24,12 @@ class ApiController extends Controller
 
         // Kembalikan respon JSON
         return response()->json(['success' => 'Pesan MQTT berhasil dikirim!']);
+    }
+
+    private function validDate($date)
+    {
+        $date = strtotime($date);
+        return date('Y-m-d H:i:s', $date);
     }
 
     public function getPH(Request $request)
@@ -156,14 +163,33 @@ class ApiController extends Controller
         } else {
             $pompa->suhu = null;
         }
+        $pompa->otomatis = $request->boolean('otomatis', false);
         $pompa->save();
 
         return response()->json(['success' => 'Status pompa berhasil diubah!']);
     }
 
-    private function validDate($date)
+    public function getDashboard()
     {
-        $date = strtotime($date);
-        return date('Y-m-d H:i:s', $date);
+        $ph = optional(TabelPHModel::latest()->first())->ph ?? 0;
+        $tds = optional(TabelTDSModel::latest()->first())->ppm ?? 0;
+        $tempHum = [
+            'temperature' => optional(TabelTempHumModel::latest()->first())->temperature ?? 0,
+            'humidity' => optional(TabelTempHumModel::latest()->first())->humidity ?? 0,
+        ];
+        $arusAir = optional(TabelArusAirModel::latest()->first())->debit ?? 0;
+        $pompa = TabelPompaModel::latest()->first();
+        $ping = optional(TabelPingModel::latest()->first())->ping ?? 0;
+
+        $formattedData = [
+            'ph' => $ph,
+            'ping' => $ping,
+            'tds' => $tds,
+            'tempHum' => $tempHum,
+            'arusAir' => $arusAir,
+            'pompa' => $pompa
+        ];
+
+        return response()->json($formattedData);
     }
 }

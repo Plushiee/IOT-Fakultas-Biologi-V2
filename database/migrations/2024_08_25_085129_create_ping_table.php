@@ -11,14 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('pompa', function (Blueprint $table) {
+        Schema::create('ping', function (Blueprint $table) {
             $table->id()->autoIncrement()->primary();
             $table->unsignedBigInteger('id_area');
-            $table->string('status');
-            $table->integer('suhu')->nullable();
-            $table->boolean('otomatis');
+            $table->float('ping');
             $table->timestamps();
-
             $table->foreign('id_area')->references('id_area')->on('area');
         });
     }
@@ -28,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('pompa');
+        Schema::dropIfExists('temphum');
     }
 };

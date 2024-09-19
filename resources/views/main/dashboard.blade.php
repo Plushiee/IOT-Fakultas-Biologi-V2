@@ -65,6 +65,7 @@
                                     <div class="text-center my-4">
                                         <h1 id="ph-display">0.0 </h1>
                                     </div>
+                                    <p class="card-text text-center pt-2 fw-bold" id="asam-basa">-</p>
                                 </div>
                             </div>
                         </div>
@@ -81,7 +82,7 @@
                                     <div class="text-center my-4">
                                         <h1 id="volume-display">0000</h1>
                                     </div>
-                                    <p class="card-text text-center pt-2">Ml</p>
+                                    <p class="card-text text-center pt-2">Liter</p>
                                 </div>
                             </div>
                         </div>
@@ -91,7 +92,7 @@
                                 <div class="card-body card-body-carousel">
                                     <h5 class="card-title mb-3">TDS</h5>
                                     <div class="text-center my-4">
-                                        <h1 id="pp,-display">0000</h1>
+                                        <h1 id="ppm-display">0000</h1>
                                     </div>
                                     <p class="card-text text-center pt-2">PPM</p>
                                 </div>
@@ -168,8 +169,8 @@
                         <div class="col-4 text-end">
                             <div class="container-fluid">
                                 <div class="form-check form-switch float-end">
-                                    <input class="form-check-input" type="checkbox" role="switch"
-                                        id="automatic-switch" {{ $pompaStatus->otomatis ? 'checked' : '' }}>
+                                    <input class="form-check-input" type="checkbox" role="switch" id="automatic-switch"
+                                        {{ $pompaStatus->otomatis == true ? 'checked' : '' }}>
                                 </div>
                             </div>
                         </div>
@@ -186,8 +187,9 @@
                                     <button class="btn btn-outline-secondary" type="button" id="btn-minus">
                                         <i class="fa fa-minus-circle"></i>
                                     </button>
-                                    <input type="number" class="form-control custom-height" value="{{ $pompaStatus->suhu }}"
-                                        min="0" max="100" step="1" id="temperature-input">
+                                    <input type="number" class="form-control custom-height"
+                                        value="{{ $pompaStatus->suhu }}" min="0" max="100" step="1"
+                                        id="temperature-input">
                                     <button class="btn btn-outline-secondary" type="button" id="btn-plus">
                                         <i class="fa fa-plus-circle"></i>
                                     </button>
@@ -280,6 +282,11 @@
             // Script untuk kontrol
             var first = true;
 
+            // API mqtt Pompa
+            let isAutomatic = false;
+            let pumpStatus = 'mati';
+            let temperature = 5.0;
+
             function updateVisibility() {
                 if ($('#automatic-switch').is(':checked')) {
                     if (first) {
@@ -287,6 +294,7 @@
                     }
                     $('#pump-control').slideUp();
                     $('#temperature-control, #status-pompa').slideDown();
+                    isAutomatic = true;
                 } else {
                     $('#pump-control').slideDown();
                     $('#temperature-control, #status-pompa').slideUp();
@@ -313,11 +321,6 @@
                 updateVisibility();
             });
 
-            // API mqtt Pompa
-            let isAutomatic = false;
-            let pumpStatus = 'mati';
-            var temperature = 5.0;
-
             $('#automatic-switch').change(function() {
                 isAutomatic = this.checked;
                 if (isAutomatic) {
@@ -329,6 +332,8 @@
                     });
                 } else {
                     $('#pump-switch').prop('disabled', false);
+                    sendMqttMessage('fakbiologi/pump', 'mati');
+                    sendPompaStatus('mati', false);
                     alert.fire({
                         icon: 'warning',
                         title: 'Sistem Otomatisasi Dimatikan!'
@@ -372,30 +377,35 @@
             function checkTemperature() {
                 if (isAutomatic) {
                     let temperatureThreshold = parseFloat($('#temperature-input').val());
+
                     if (temperature < temperatureThreshold && pumpStatus !== 'nyala') {
                         sendMqttMessage('fakbiologi/pump', 'nyala');
-                        sendPompaStatus('nyala');
-                        pumpStatus = 'nyala';
+                        sendPompaStatus('nyala', true);
+                        pumpStatus = 'nyala'; // Update status pompa setelah mengirim API
                         updatePumpStatus(pumpStatus);
                     } else if (temperature >= temperatureThreshold && pumpStatus !== 'mati') {
                         sendMqttMessage('fakbiologi/pump', 'mati');
-                        sendPompaStatus('mati');
-                        pumpStatus = 'mati';
+                        sendPompaStatus('mati', true);
+                        pumpStatus = 'mati'; // Update status pompa setelah mengirim API
                         updatePumpStatus(pumpStatus);
                     }
-                    // Cek setiap 2 detik
+
+                    // Hanya panggil kembali jika status masih otomatis
                     setTimeout(checkTemperature, 2000);
                 }
             }
 
+
             // Function Send Pompa to Database
-            function sendPompaStatus(status) {
+            function sendPompaStatus(status, otomatis = false) {
                 $.ajax({
                     url: '{{ route('api.post.pompa') }}',
                     type: 'POST',
                     data: {
                         _token: '{{ csrf_token() }}',
-                        status: status
+                        status: status,
+                        otomatis: otomatis,
+                        suhu: $('#temperature-input').val()
                     },
                     error: function(response) {
                         alert.fire({
@@ -424,206 +434,239 @@
                     }
                 });
             }
-        });
 
-        // MQTT Udara
-        function updateTemperatureHumidity(temperature, humidity) {
-            var displayElement = $("#temperature-humidity-display");
-            var currentText = displayElement.html().split("<br>");
 
-            var currentTemperature = parseFloat(currentText[0]) || 0;
-            var currentHumidity = parseInt(currentText[1]) || 0;
+            // MQTT Udara
+            function updateTemperatureHumidity(temperature, humidity) {
+                var displayElement = $("#temperature-humidity-display");
+                var currentText = displayElement.html().split("<br>");
 
-            if (temperature !== null) {
-                currentTemperature = temperature.toFixed(1) + '° C';
-            } else {
-                currentTemperature = currentTemperature.toFixed(1) + '° C';
+                var currentTemperature = parseFloat(currentText[0]) || 0;
+                var currentHumidity = parseInt(currentText[1]) || 0;
+
+                if (temperature !== null) {
+                    currentTemperature = temperature.toFixed(1) + '° C';
+                } else {
+                    currentTemperature = currentTemperature.toFixed(1) + '° C';
+                }
+
+                if (humidity !== null) {
+                    currentHumidity = humidity + '%';
+                } else {
+                    currentHumidity = currentHumidity + '%';
+                }
+
+                displayElement.html(currentTemperature + "<br>" + currentHumidity);
             }
 
-            if (humidity !== null) {
-                currentHumidity = humidity + '%';
-            } else {
-                currentHumidity = currentHumidity + '%';
-            }
-
-            displayElement.html(currentTemperature + "<br>" + currentHumidity);
-        }
-
-        // MQTT PH
-        function updatePH(ph) {
-            var displayElement = $("#ph-display");
-            displayElement.html(ph);
-        }
-
-        // MQTT Volume
-        function updateVolume(tinggi) {
-            var displayElement = $("#volume-display");
-            let l_alas = 3.14 * (20 / 2) ** 2;
-            let volume = l_alas * tinggi;
-            displayElement.html(volume);
-        }
-
-        // MQTT TDS
-        function updateTDS(tds) {
-            var displayElement = $("#ppm-display");
-            displayElement.html(tds);
-        }
-
-        // Script untuk Fluid Meter
-        var fm = new FluidMeter();
-        fm.init({
-            targetContainer: document.getElementById("fluid-meter"),
-            fillPercentage: 0,
-            options: {
-                fontSize: "55px",
-                fontFamily: "Arial",
-                fontFillStyle: "black",
-                drawShadow: false,
-                drawText: true,
-                drawPercentageSign: true,
-                drawBubbles: true,
-                size: 250,
-                borderWidth: 0,
-                foregroundFluidLayer: {
-                    fillStyle: "lightblue",
-                    angularSpeed: 100,
-                    maxAmplitude: 12,
-                    frequency: 40,
-                    horizontalSpeed: -150
-                },
-                backgroundFluidLayer: {
-                    fillStyle: "blue",
-                    angularSpeed: 100,
-                    maxAmplitude: 9,
-                    frequency: 30,
-                    horizontalSpeed: 150
+            // MQTT PH
+            function updatePH(ph) {
+                const asamBasa = document.getElementById('asam-basa');
+                var displayElement = $("#ph-display");
+                displayElement.html(ph);
+                if (ph < 7) {
+                    asamBasa.innerHTML = "Asam";
+                    asamBasa.style.color = "red";
+                } else if (ph > 7) {
+                    asamBasa.innerHTML = "Basa";
+                    asamBasa.style.color = "blue";
+                } else {
+                    asamBasa.innerHTML = "Netral";
+                    asamBasa.style.color = "black";
                 }
             }
-        });
 
-        // Script for Chart Waterflow
-        var config = {
-            type: 'gauge',
-            data: {
-                labels: ['Mati', 'Cukup', 'Bagus'],
-                datasets: [{
-                    data: [0, 250, 500, 750, 1000],
-                    value: 0,
-                    backgroundColor: ['red', 'red', 'orange', 'yellow', 'green'],
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                title: {
-                    display: false
-                },
-                layout: {
-                    padding: {
-                        bottom: 30
+            // MQTT Volume
+            function updateVolume(tinggi) {
+                var displayElement = $("#volume-display");
+                let l_alas = 3.14 * (20 / 2) ** 2;
+                let volume = l_alas * tinggi;
+                let volumeInLiters = volume / 1000;
+                displayElement.html(volumeInLiters.toFixed(2));
+            }
+
+            // MQTT TDS
+            function updateTDS(tds) {
+                var displayElement = $("#ppm-display");
+                displayElement.html(tds);
+            }
+
+            // Script untuk Fluid Meter
+            var fm = new FluidMeter();
+            fm.init({
+                targetContainer: document.getElementById("fluid-meter"),
+                fillPercentage: 0,
+                options: {
+                    fontSize: "55px",
+                    fontFamily: "Arial",
+                    fontFillStyle: "black",
+                    drawShadow: false,
+                    drawText: true,
+                    drawPercentageSign: true,
+                    drawBubbles: true,
+                    size: 250,
+                    borderWidth: 0,
+                    foregroundFluidLayer: {
+                        fillStyle: "lightblue",
+                        angularSpeed: 100,
+                        maxAmplitude: 12,
+                        frequency: 40,
+                        horizontalSpeed: -150
+                    },
+                    backgroundFluidLayer: {
+                        fillStyle: "blue",
+                        angularSpeed: 100,
+                        maxAmplitude: 9,
+                        frequency: 30,
+                        horizontalSpeed: 150
                     }
-                },
-                needle: {
-                    radiusPercentage: 2,
-                    widthPercentage: 3.2,
-                    lengthPercentage: 80,
-                    color: 'rgba(0, 0, 0, 1)'
-                },
-                valueLabel: {
-                    display: true,
-                    formatter: (value) => {
-                        return Math.round(value) + ' ml/s';
-                    }
-                }
-            }
-        };
-
-        window.onload = function() {
-            var ctx = document.getElementById('chart').getContext('2d');
-            window.myGauge = new Chart(ctx, config);
-        };
-
-        function updateTime() {
-            const timeElement = document.getElementById('current-time');
-            const iconElement = document.getElementById('time-icon');
-            const now = new Date();
-            const hours = now.getHours();
-            const minutes = now.getMinutes();
-            const seconds = now.getSeconds();
-            const formattedTime =
-                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} WIB`;
-
-            timeElement.textContent = formattedTime;
-
-            if (hours >= 6 && hours < 18) { // Pagi (06:00 - 18:00)
-                iconElement.className = 'fas fa-sun icon-sun';
-            } else { // Malam
-                iconElement.className = 'fas fa-moon icon-moon';
-            }
-        }
-
-        // Update waktu setiap detik
-        setInterval(updateTime, 1000);
-
-        // Update waktu saat halaman dimuat
-        updateTime();
-
-        // API waktu
-        const apiKey = '5ab3a993f24b4255a8f64611240107';
-        const city = 'Kotabaru,Yogyakarta';
-        const apiUrl = `https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${city}&days=1&aqi=no&alerts=no}`;
-
-        fetch(apiUrl)
-            .then(response => response.json())
-            .then(data => {
-                const weatherIcon = document.getElementById('weather-icon');
-                const weatherDescription = document.getElementById('weather-description');
-
-                const iconUrl = data.current.condition.icon;
-                weatherIcon.src = iconUrl;
-                weatherDescription.textContent = data.current.condition.text;
-            })
-            .catch(error => console.error('Error fetching weather data:', error));
-
-
-        // Script untuk Update data di MQTT
-        setTimeout(() => {
-            window.Echo.channel('MqttChannel').listen('MqttSubscribeEvent', (e) => {
-                console.log(e);
-                // Pastikan struktur JSON yang diterima sesuai dengan format yang diberikan
-                if (e.topic === 'fakbiologi/waterflow') {
-                    var newValue = parseInt(e.message);
-                    window.myGauge.data.datasets[0].value = newValue;
-                    window.myGauge.update();
-                }
-
-                if (e.topic === 'fakbiologi/ping') {
-                    var newValue = parseInt(e.message);
-                    fm.setPercentage(newValue);
-                    updateVolume(newValue);
-                };
-
-                if (e.topic === 'fakbiologi/temperatureDHT') {
-                    var newValue = parseFloat(e.message);
-                    temperature = newValue;
-                    updateTemperatureHumidity(newValue, null);
-                }
-
-                if (e.topic === 'fakbiologi/humidityDHT') {
-                    var newValue = parseInt(e.message);
-                    updateTemperatureHumidity(null, newValue);
-                }
-
-                if (e.topic === 'fakbiologi/PH') {
-                    var newValue = parseFloat(e.message);
-                    updatePH(newValue);
-                }
-
-                if (e.topic === 'fakbiologi/TDS') {
-                    var newValue = parseInt(e.message);
-                    updateTDS(newValue);
                 }
             });
-        }, 200);
+
+            // Script for Chart Waterflow
+            var config = {
+                type: 'gauge',
+                data: {
+                    labels: ['Mati', 'Cukup', 'Bagus'],
+                    datasets: [{
+                        data: [0, 250, 500, 750, 1000],
+                        value: 0,
+                        backgroundColor: ['red', 'red', 'orange', 'yellow', 'green'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    title: {
+                        display: false
+                    },
+                    layout: {
+                        padding: {
+                            bottom: 30
+                        }
+                    },
+                    needle: {
+                        radiusPercentage: 2,
+                        widthPercentage: 3.2,
+                        lengthPercentage: 80,
+                        color: 'rgba(0, 0, 0, 1)'
+                    },
+                    valueLabel: {
+                        display: true,
+                        formatter: (value) => {
+                            return Math.round(value) + ' ml/s';
+                        }
+                    }
+                }
+            };
+
+            window.onload = function() {
+                var ctx = document.getElementById('chart').getContext('2d');
+                window.myGauge = new Chart(ctx, config);
+            };
+
+            function updateTime() {
+                const timeElement = document.getElementById('current-time');
+                const iconElement = document.getElementById('time-icon');
+                const now = new Date();
+                const hours = now.getHours();
+                const minutes = now.getMinutes();
+                const seconds = now.getSeconds();
+                const formattedTime =
+                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} WIB`;
+
+                timeElement.textContent = formattedTime;
+
+                if (hours >= 6 && hours < 18) { // Pagi (06:00 - 18:00)
+                    iconElement.className = 'fas fa-sun icon-sun';
+                } else { // Malam
+                    iconElement.className = 'fas fa-moon icon-moon';
+                }
+            }
+
+            // Update waktu setiap detik
+            setInterval(updateTime, 1000);
+
+            // Update waktu saat halaman dimuat
+            updateTime();
+
+            // API waktu
+            const apiKey = '5ab3a993f24b4255a8f64611240107';
+            const city = 'Kotabaru,Yogyakarta';
+            const apiUrl =
+                `https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${city}&days=1&aqi=no&alerts=no}`;
+
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const weatherIcon = document.getElementById('weather-icon');
+                    const weatherDescription = document.getElementById('weather-description');
+
+                    const iconUrl = data.current.condition.icon;
+                    weatherIcon.src = iconUrl;
+                    weatherDescription.textContent = data.current.condition.text;
+                })
+                .catch(error => console.error('Error fetching weather data:', error));
+
+
+            // Script untuk Update data di MQTT
+            // setTimeout(() => {
+            //     window.Echo.channel('MqttChannel').listen('MqttSubscribeEvent', (e) => {
+            //         console.log(e);
+            //         // Pastikan struktur JSON yang diterima sesuai dengan format yang diberikan
+            //         if (e.topic === 'fakbiologi/waterflow') {
+            //             var newValue = parseInt(e.message);
+            //             window.myGauge.data.datasets[0].value = newValue;
+            //             window.myGauge.update();
+            //         }
+
+            //         if (e.topic === 'fakbiologi/ping') {
+            //             var newValue = parseInt(e.message);
+            //             fm.setPercentage(newValue);
+            //             updateVolume(newValue);
+            //         };
+
+            //         if (e.topic === 'fakbiologi/temperatureDHT') {
+            //             var newValue = parseFloat(e.message);
+            //             temperature = newValue;
+            //             updateTemperatureHumidity(newValue, null);
+            //         }
+
+            //         if (e.topic === 'fakbiologi/humidityDHT') {
+            //             var newValue = parseInt(e.message);
+            //             updateTemperatureHumidity(null, newValue);
+            //         }
+
+            //         if (e.topic === 'fakbiologi/PH') {
+            //             var newValue = parseFloat(e.message);
+            //             updatePH(newValue);
+            //         }
+
+            //         if (e.topic === 'fakbiologi/TDS') {
+            //             var newValue = parseInt(e.message);
+            //             updateTDS(newValue);
+            //         }
+            //     });
+            // }, 200);
+
+            setInterval(() => {
+                $.ajax({
+                    type: "GET",
+                    url: "{{ route('api.get.dashboard') }}",
+                    success: function(response) {
+                        updateTemperatureHumidity(response.tempHum.temperature, response.tempHum
+                            .humidity);
+                        temperature = response.tempHum.temperature;
+                        updatePH(response.ph);
+                        updateVolume(response.arusAir);
+                        updateTDS(response.tds);
+                        checkTemperature();
+                        window.myGauge.data.datasets[0].value = response.arusAir;
+                        window.myGauge.update();
+                        fm.setPercentage(response.ping);
+                    }
+                });
+            }, 1200);
+        });
     </script>
 @endsection

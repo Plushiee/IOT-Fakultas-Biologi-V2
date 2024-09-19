@@ -49,7 +49,7 @@
                 </select>
             </div>
 
-            <table id="table" data-show-export="true" data-pagination="true" data-side-pagination="server"
+            <table id="table" data-show-export="true" data-pagination="true" data-page-list="[10, 25, 50, 100, 200, ALL]"
                 data-click-to-select="true" data-toolbar="#toolbar" data-search="true" data-show-toggle="true"
                 data-show-columns="true" data-ajax="APIGetPH">
             </table>

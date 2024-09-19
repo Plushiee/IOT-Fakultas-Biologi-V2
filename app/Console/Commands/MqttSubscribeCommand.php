@@ -7,6 +7,7 @@ use PhpMqtt\Client\Facades\MQTT;
 use App\Events\MqttSubscribeEvent;
 use App\Models\TabelArusAirModel;
 use App\Models\TabelPHModel;
+use App\Models\TabelPingModel;
 use App\Models\TabelTDSModel;
 use App\Models\TabelTempHumModel;
 use PhpMqtt\Client\Exceptions\MqttClientException;
@@ -81,7 +82,7 @@ class MqttSubscribeCommand extends Command
         switch ($topic) {
             case 'fakbiologi/waterflow':
                 TabelArusAirModel::create(['id_area' => 1, 'debit' => $message]);
-                break;
+
             case 'fakbiologi/TDS':
                 TabelTDSModel::create(['id_area' => 1, 'ppm' => $message]);
                 break;
@@ -95,6 +96,9 @@ class MqttSubscribeCommand extends Command
             case 'fakbiologi/temperatureDHT':
                 $this->tempHumData['temperature'] = $message;
                 $this->storeTempHumData();
+                break;
+            case 'fakbiologi/ping':
+                TabelPingModel::create(['id_area' => 1, 'ping' => $message]);
                 break;
                 // Tambahkan case untuk topik lain jika diperlukan
             default:

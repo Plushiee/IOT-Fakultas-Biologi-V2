@@ -5,16 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class TabelPompaModel extends Model
+class TabelPingModel extends Model
 {
     use HasFactory;
 
-    protected $table = 'pompa';
+    protected $table = 'ping';
     protected $fillable = [
         'id_area',
-        'status',
-        'otomatis',
-        'suhu'
+        'ping'
     ];
     protected $hidden = [
         'id',
