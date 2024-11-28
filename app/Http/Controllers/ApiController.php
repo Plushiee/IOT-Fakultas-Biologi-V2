@@ -49,13 +49,15 @@ class ApiController extends Controller
         $formattedData = [
             'total' => $ph->count(),
             'totalNotFiltered' => TabelPHModel::count(),
-            'rows' => $ph->map(function ($item) {
-                return [
-                    'timestamp' => $item->created_at->format('Y-m-d H:i:s'),
-                    'id_area' => $item->id_area,
-                    'ph' => $item->ph
-                ];
-            })->toArray()
+            'rows' => $ph
+                ->map(function ($item) {
+                    return [
+                        'timestamp' => $item->created_at->format('Y-m-d H:i:s'),
+                        'id_area' => $item->id_area,
+                        'ph' => $item->ph,
+                    ];
+                })
+                ->toArray(),
         ];
 
         return response()->json($formattedData);
@@ -78,13 +80,15 @@ class ApiController extends Controller
         $formattedData = [
             'total' => $ph->count(),
             'totalNotFiltered' => TabelTDSModel::count(),
-            'rows' => $ph->map(function ($item) {
-                return [
-                    'timestamp' => $item->created_at->format('Y-m-d H:i:s'),
-                    'id_area' => $item->id_area,
-                    'ppm' => $item->ppm
-                ];
-            })->toArray()
+            'rows' => $ph
+                ->map(function ($item) {
+                    return [
+                        'timestamp' => $item->created_at->format('Y-m-d H:i:s'),
+                        'id_area' => $item->id_area,
+                        'ppm' => $item->ppm,
+                    ];
+                })
+                ->toArray(),
         ];
 
         return response()->json($formattedData);
@@ -107,14 +111,16 @@ class ApiController extends Controller
         $formattedData = [
             'total' => $ph->count(),
             'totalNotFiltered' => TabelTempHumModel::count(),
-            'rows' => $ph->map(function ($item) {
-                return [
-                    'timestamp' => $item->created_at->format('Y-m-d H:i:s'),
-                    'id_area' => $item->id_area,
-                    'temperature' => $item->temperature,
-                    'humidity' => $item->humidity,
-                ];
-            })->toArray()
+            'rows' => $ph
+                ->map(function ($item) {
+                    return [
+                        'timestamp' => $item->created_at->format('Y-m-d H:i:s'),
+                        'id_area' => $item->id_area,
+                        'temperature' => $item->temperature,
+                        'humidity' => $item->humidity,
+                    ];
+                })
+                ->toArray(),
         ];
 
         return response()->json($formattedData);
@@ -137,13 +143,15 @@ class ApiController extends Controller
         $formattedData = [
             'total' => $ph->count(),
             'totalNotFiltered' => TabelArusAirModel::count(),
-            'rows' => $ph->map(function ($item) {
-                return [
-                    'timestamp' => $item->created_at->format('Y-m-d H:i:s'),
-                    'id_area' => $item->id_area,
-                    'debit' => $item->debit
-                ];
-            })->toArray()
+            'rows' => $ph
+                ->map(function ($item) {
+                    return [
+                        'timestamp' => $item->created_at->format('Y-m-d H:i:s'),
+                        'id_area' => $item->id_area,
+                        'debit' => $item->debit,
+                    ];
+                })
+                ->toArray(),
         ];
 
         return response()->json($formattedData);
@@ -152,11 +160,11 @@ class ApiController extends Controller
     public function postPompa(Request $request)
     {
         $request->validate([
-            'status' => 'required|in:nyala,mati'
+            'status' => 'required|in:nyala,mati',
         ]);
 
         $pompa = new TabelPompaModel();
-        $pompa->id_area = (1);
+        $pompa->id_area = 1;
         $pompa->status = $request->input('status');
         if ($request->has('suhu')) {
             $pompa->suhu = $request->input('suhu');
@@ -187,9 +195,53 @@ class ApiController extends Controller
             'tds' => $tds,
             'tempHum' => $tempHum,
             'arusAir' => $arusAir,
-            'pompa' => $pompa
+            'pompa' => $pompa,
         ];
 
         return response()->json($formattedData);
+    }
+
+    public function getSSE()
+    {
+        return response()->stream(
+            function () {
+                while (!connection_aborted()) {
+                    // Ambil data terbaru
+                    $ph = optional(TabelPHModel::latest()->first())->ph ?? 0;
+                    $tds = optional(TabelTDSModel::latest()->first())->ppm ?? 0;
+                    $tempHum = [
+                        'temperature' => optional(TabelTempHumModel::latest()->first())->temperature ?? 0,
+                        'humidity' => optional(TabelTempHumModel::latest()->first())->humidity ?? 0,
+                    ];
+                    $arusAir = optional(TabelArusAirModel::latest()->first())->debit ?? 0;
+                    $pompa = TabelPompaModel::latest()->first();
+                    $ping = optional(TabelPingModel::latest()->first())->ping ?? 0;
+
+                    $formattedData = [
+                        'ph' => $ph,
+                        'ping' => $ping,
+                        'tds' => $tds,
+                        'tempHum' => $tempHum,
+                        'arusAir' => $arusAir,
+                        'pompa' => $pompa,
+                    ];
+
+                    // Kirim data sebagai event SSE
+                    echo 'data: ' . json_encode($formattedData) . "\n\n";
+                    ob_flush();
+                    flush();
+
+                    // Tunggu sebelum mengirim data berikutnya (interval 1 detik)
+                    sleep(1);
+                }
+            },
+            200,
+            [
+                'Content-Type' => 'text/event-stream',
+                'Cache-Control' => 'no-cache',
+                'Connection' => 'keep-alive',
+                'X-Accel-Buffering' => 'no',
+            ],
+        );
     }
 }

@@ -50,9 +50,8 @@ class MqttSubscribeCommand extends Command
                 // Subscribe to each topic
                 foreach ($topics as $topic) {
                     $mqtt->subscribe($topic, function (string $topic, string $message) {
-                        echo sprintf("Received message on topic [%s]: %s\n", $topic, $message);
+                        // echo sprintf("Received message on topic [%s]: %s\n", $topic, $message);
 
-                        // Parse the message and save to database
                         $this->handleMessage($topic, $message);
 
                         // Dispatch event with received message and topic

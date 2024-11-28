@@ -21,3 +21,7 @@ Route::post('/post/pompa', [ApiController::class, 'postPompa'])->name('api.post.
 // API Dashboard Start
 Route::get('/get/dashboard', [ApiController::class, 'getDashboard'])->name('api.get.dashboard');
 // API Dashboard End
+
+// API Server-Sent Events (SSE) Start
+Route::get('/get/sse', [ApiController::class, 'getSSE'])->name('api.get.sse');
+// API Server-Sent Events (SSE) End

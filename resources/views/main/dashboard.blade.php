@@ -608,65 +608,33 @@
                 })
                 .catch(error => console.error('Error fetching weather data:', error));
 
+            // SSE Start
+            // Inisialisasi EventSource
+            const eventSource = new EventSource("{{ route('api.get.sse') }}");
 
-            // Script untuk Update data di MQTT
-            // setTimeout(() => {
-            //     window.Echo.channel('MqttChannel').listen('MqttSubscribeEvent', (e) => {
-            //         console.log(e);
-            //         // Pastikan struktur JSON yang diterima sesuai dengan format yang diberikan
-            //         if (e.topic === 'fakbiologi/waterflow') {
-            //             var newValue = parseInt(e.message);
-            //             window.myGauge.data.datasets[0].value = newValue;
-            //             window.myGauge.update();
-            //         }
+            eventSource.onmessage = function(event) {
+                const response = JSON.parse(event.data);
 
-            //         if (e.topic === 'fakbiologi/ping') {
-            //             var newValue = parseInt(e.message);
-            //             fm.setPercentage(newValue);
-            //             updateVolume(newValue);
-            //         };
+                updateTemperatureHumidity(response.tempHum.temperature, response.tempHum.humidity);
+                const temperature = response.tempHum.temperature;
+                updatePH(response.ph);
+                updateVolume(response.arusAir);
+                updateTDS(response.tds);
+                checkTemperature();
 
-            //         if (e.topic === 'fakbiologi/temperatureDHT') {
-            //             var newValue = parseFloat(e.message);
-            //             temperature = newValue;
-            //             updateTemperatureHumidity(newValue, null);
-            //         }
+                window.myGauge.data.datasets[0].value = response.arusAir;
+                window.myGauge.update();
+                fm.setPercentage(response.ping);
+            };
 
-            //         if (e.topic === 'fakbiologi/humidityDHT') {
-            //             var newValue = parseInt(e.message);
-            //             updateTemperatureHumidity(null, newValue);
-            //         }
+            // Error Handler SSE
+            eventSource.onerror = function(error) {
+                console.error("SSE connection error:", error);
 
-            //         if (e.topic === 'fakbiologi/PH') {
-            //             var newValue = parseFloat(e.message);
-            //             updatePH(newValue);
-            //         }
-
-            //         if (e.topic === 'fakbiologi/TDS') {
-            //             var newValue = parseInt(e.message);
-            //             updateTDS(newValue);
-            //         }
-            //     });
-            // }, 200);
-
-            setInterval(() => {
-                $.ajax({
-                    type: "GET",
-                    url: "{{ route('api.get.dashboard') }}",
-                    success: function(response) {
-                        updateTemperatureHumidity(response.tempHum.temperature, response.tempHum
-                            .humidity);
-                        temperature = response.tempHum.temperature;
-                        updatePH(response.ph);
-                        updateVolume(response.arusAir);
-                        updateTDS(response.tds);
-                        checkTemperature();
-                        window.myGauge.data.datasets[0].value = response.arusAir;
-                        window.myGauge.update();
-                        fm.setPercentage(response.ping);
-                    }
-                });
-            }, 1200);
+                // Optional: Menutup koneksi jika error
+                // eventSource.close();
+            };
+            // SSE End
         });
     </script>
 @endsection
