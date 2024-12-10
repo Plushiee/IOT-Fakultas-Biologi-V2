@@ -15,7 +15,7 @@ use PhpMqtt\Client\Exceptions\MqttClientException;
 class MqttSubscribeCommand extends Command
 {
     protected $signature = 'mqtt:subscribe';
-    protected $description = 'Subscribe to MQTT topics and handle incoming messages';
+    protected $description = 'Subscribe ke topik MQTT and menghandle pesan yang masuk';
     protected $tempHumData = [
         'temperature' => null,
         'humidity' => null,
@@ -50,11 +50,9 @@ class MqttSubscribeCommand extends Command
                 // Subscribe to each topic
                 foreach ($topics as $topic) {
                     $mqtt->subscribe($topic, function (string $topic, string $message) {
-                        // echo sprintf("Received message on topic [%s]: %s\n", $topic, $message);
 
                         $this->handleMessage($topic, $message);
 
-                        // Dispatch event with received message and topic
                         event(new MqttSubscribeEvent($message, $topic));
                     }, 0);
                 }
@@ -62,13 +60,11 @@ class MqttSubscribeCommand extends Command
                 // Start the loop to listen for incoming messages
                 $mqtt->loop(true);
             } catch (MqttClientException $e) {
-                // Log the error
+
                 $this->error("MQTT error: " . $e->getMessage());
 
-                // Implement a delay before reconnecting
                 sleep(5);
 
-                // Attempt to reconnect to the broker
                 continue;
             }
         }
@@ -76,17 +72,24 @@ class MqttSubscribeCommand extends Command
         return 0;
     }
 
+    // Fungsi Handle message yang masuk
     protected function handleMessage($topic, $message)
     {
         switch ($topic) {
             case 'fakbiologi/waterflow':
-                TabelArusAirModel::create(['id_area' => 1, 'debit' => $message]);
-
+                if ($this->isBedaData('TabelArusAirModel', 'debit', $message)) {
+                    TabelArusAirModel::create(['id_area' => 1, 'debit' => $message]);
+                }
+                break;
             case 'fakbiologi/TDS':
-                TabelTDSModel::create(['id_area' => 1, 'ppm' => $message]);
+                if ($this->isBedaData('TabelTDSModel', 'ppm', $message)) {
+                    TabelTDSModel::create(['id_area' => 1, 'ppm' => $message]);
+                }
                 break;
             case 'fakbiologi/PH':
-                TabelPHModel::create(['id_area' => 1, 'ph' => $message]);
+                if ($this->isBedaData('TabelPHModel', 'ph', $message)) {
+                    TabelPHModel::create(['id_area' => 1, 'ph' => $message]);
+                }
                 break;
             case 'fakbiologi/humidityDHT':
                 $this->tempHumData['humidity'] = $message;
@@ -97,28 +100,42 @@ class MqttSubscribeCommand extends Command
                 $this->storeTempHumData();
                 break;
             case 'fakbiologi/ping':
-                TabelPingModel::create(['id_area' => 1, 'ping' => $message]);
+                if ($this->isBedaData('TabelPingModel', 'ping', $message)) {
+                    TabelPingModel::create(['id_area' => 1, 'ping' => $message]);
+                }
                 break;
-                // Tambahkan case untuk topik lain jika diperlukan
             default:
-                // Logika default jika topik tidak dikenali
                 break;
         }
     }
 
-    // Function to store temperature and humidity data if both are available
+    // fungsi menyimpan data suhu dan kelembaban dalam satu Tabel
     protected function storeTempHumData()
     {
+        $lastRecord = TabelTempHumModel::latest('created_at')->first();
         if ($this->tempHumData['temperature'] !== null && $this->tempHumData['humidity'] !== null) {
-            TabelTempHumModel::create([
-                'id_area' => 1,
-                'temperature' => $this->tempHumData['temperature'],
-                'humidity' => $this->tempHumData['humidity']
-            ]);
+            $isDifferent = !$lastRecord ||
+                $lastRecord->temperature != $this->tempHumData['temperature'] ||
+                $lastRecord->humidity != $this->tempHumData['humidity'];
 
-            // Reset data after saving
-            $this->tempHumData['temperature'] = null;
-            $this->tempHumData['humidity'] = null;
+            if ($isDifferent) {
+                TabelTempHumModel::create([
+                    'id_area' => 1,
+                    'temperature' => $this->tempHumData['temperature'],
+                    'humidity' => $this->tempHumData['humidity']
+                ]);
+
+                // Reset data after saving
+                $this->tempHumData['temperature'] = null;
+                $this->tempHumData['humidity'] = null;
+            }
         }
+    }
+
+    // Fungsi cek apakah data berbeda
+    protected function isBedaData($model, $column, $newValue)
+    {
+        $lastRecord = app($model)::latest('created_at')->first();
+        return !$lastRecord || $lastRecord->$column != $newValue;
     }
 }
