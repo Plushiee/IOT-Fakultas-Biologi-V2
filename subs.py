@@ -38,7 +38,7 @@ def connect_mqtt() -> mqtt_client:
 def publish(client):
     # Nilai awal untuk setiap topik
     current_values = {
-        topic1: random.uniform(850.0, 1000.0),
+        topic1: random.uniform(650.0, 900.0),
         topic2: random.randint(600, 1000),
         topic3: random.uniform(50.0, 80.0),
         topic4: random.uniform(25.0, 35.0),
