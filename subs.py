@@ -29,7 +29,7 @@ def connect_mqtt() -> mqtt_client:
         else:
             print("Failed to connect, return code %d\n", rc)
 
-    client = mqtt_client.Client(client_id)
+    client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION1, client_id)
     client.username_pw_set(username, password)
     client.on_connect = on_connect
     client.connect(broker, port)
@@ -66,16 +66,17 @@ def publish(client):
             # Kirim nilai ke broker MQTT
             result = client.publish(topic, msg)
             status = result[0]
-            if status == 0:
-                print(f"Send `{msg}` to topic `{topic}`")
-            else:
+            if status != 0:
                 print(f"Failed to send message to topic {topic}")
+            #     print(f"Send `{msg}` to topic `{topic}`")
+            # else:
+            #     print(f"Failed to send message to topic {topic}")
         
         time.sleep(2)  # Mengirim data setiap 2 detik
 
 def on_message(client, userdata, msg):
     message = f"{msg.topic}: `{msg.payload.decode()}` at {datetime.datetime.now()}\n"
-    print(message)
+    # print(message)
     # write_to_file(message)
 
 def write_to_file(message):
