@@ -23,16 +23,17 @@
                 Dashboard <i class="bi bi-speedometer2 float-end me-4"></i>
             </a>
         </li>
+        <hr class="my-4 border border-light border-1 opacity-100">
         <li>
             <a href="{{ route('main.tabelTDS') }}" class="{{ request()->routeIs('main.tabelTDS') ? 'active' : '' }}">
                 Tabel TDS <i class="bi bi-table float-end me-4"></i>
             </a>
         </li>
-        <li>
+        {{-- <li>
             <a href="{{ route('main.tabelPH') }}" class="{{ request()->routeIs('main.tabelPH') ? 'active' : '' }}">
                 Tabel PH <i class="bi bi-table float-end me-4"></i>
             </a>
-        </li>
+        </li> --}}
         <li>
             <a href="{{ route('main.tabelUdara') }}"
                 class="{{ request()->routeIs('main.tabelUdara') ? 'active' : '' }}">Tabel Udara<i

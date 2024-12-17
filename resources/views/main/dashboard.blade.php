@@ -4,6 +4,31 @@
     <link rel="stylesheet" href="{{ asset('main/css/dashboard.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
         integrity="sha384-k6RqeWeci5ZR/Lv4MR0sA0FfDOMm8gYhj6C+lVV1+ENLMBqI1n5DJRA5/tv8Z9o4" crossorigin="anonymous">
+    <style>
+        /* Floating Button Styling */
+        .floating-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #077f0d;
+            color: #fff;
+            border: none;
+            border-radius: 15%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease;
+        }
+
+        .floating-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
 @endsection
 @section('content')
     <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
@@ -156,7 +181,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-12 col-lg-6">
+        <div class="col-12 col-lg-6 d-none">
             <div class="card">
                 <div class="card-body">
                     <h3 class="card-title">Kontrol</h3>
@@ -233,9 +258,15 @@
             </div>
         </div>
     </div>
+
+    <!-- Floating Button Login -->
+    <button class="floating-btn" id="btn-login">
+        🔑
+    </button>
 @endsection
 
 @section('jQuery-extras')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="{{ asset('main/js/js-fluid-meter.js') }}"></script>
     <script src="https://code.jscharting.com/latest/jscharting.js"></script>
     <script type="text/javascript" src="https://code.jscharting.com/latest/modules/types.js"></script>
@@ -635,6 +666,71 @@
                 // eventSource.close();
             };
             // SSE End
+
+            // Alert SweetAlert2
+            $('#btn-login').click(function(e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Login',
+                    html: `
+                    <form id="login-form">
+                        <div>
+                            <label for="username">Username</label>
+                            <input type="text" id="username" class="swal2-input" placeholder="Enter your username">
+                        </div>
+                        <div>
+                            <label for="password">Password</label>
+                            <input type="password" id="password" class="swal2-input" placeholder="Enter your password">
+                        </div>
+                    </form>
+                `,
+                    showCancelButton: true,
+                    confirmButtonText: 'Login',
+                    preConfirm: () => {
+                        const username = document.getElementById('username').value;
+                        const password = document.getElementById('password').value;
+
+                        if (!username || !password) {
+                            Swal.showValidationMessage(
+                                'Please enter both username and password');
+                            return false;
+                        }
+
+                        // Return data for further processing
+                        return {
+                            username,
+                            password
+                        };
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        console.log('Login data:', result.value);
+
+                        // Example: AJAX request (adjust URL and data as needed)
+                        fetch('/login', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector(
+                                            'meta[name="csrf-token"]')
+                                        .content
+                                },
+                                body: JSON.stringify(result.value)
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    Swal.fire('Success', 'Login successful!', 'success');
+                                } else {
+                                    Swal.fire('Error', data.message, 'error');
+                                }
+                            })
+                            .catch(error => {
+                                Swal.fire('Error', 'An error occurred!', 'error');
+                            });
+                    }
+                });
+            });
         });
     </script>
 @endsection
