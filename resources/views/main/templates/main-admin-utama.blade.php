@@ -26,7 +26,7 @@
     {{-- @vite('resources/js/app.js') --}}
     <div id="wrapper">
         <!-- navbar -->
-        @include('main.templates.navbar')
+        @include('main.templates.navbar-admin-utama')
         <!-- /#navbar-wrapper -->
 
         <!-- Page Content -->
@@ -58,6 +58,41 @@
     <script src="{{ asset('main/js/sidebar.js') }}"></script>
     <script src="{{ asset('main/js/notification.js') }}"></script>
     @yield('jQuery-extras')
+
+    <!-- Script Untuk Dashboard -->
+    <script>
+        $(document).ready(function() {
+            // Dropdown Tabel Data
+            $('#tabelDataToggle').click(function() {
+                const caret = $('#tabelCaret');
+                const list = $('#tabelDataList');
+
+                if (list.is(':visible')) {
+                    list.slideUp(400); // Slide up animation
+                    caret.removeClass('bi-caret-up-fill').addClass('bi-caret-down-fill');
+                } else {
+                    list.slideDown(400); // Slide down animation
+                    caret.removeClass('bi-caret-down-fill').addClass('bi-caret-up-fill');
+                }
+            });
+
+            // Dropdown Pengaturan Akun
+            $('#accountToggle').click(function() {
+                const caret = $('#accountCaret');
+                const list = $('#accountList');
+
+                if (list.is(':visible')) {
+                    list.slideUp(400); // Slide up animation
+                    caret.removeClass('bi-caret-up-fill').addClass('bi-caret-down-fill');
+                } else {
+                    list.slideDown(400); // Slide down animation
+                    caret.removeClass('bi-caret-down-fill').addClass('bi-caret-up-fill');
+                }
+            });
+        });
+    </script>
+    <!-- /Script Untuk Dashboard -->
+
     <!-- /Script Extras -->
 </body>
 

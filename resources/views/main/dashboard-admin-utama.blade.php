@@ -1,4 +1,4 @@
-@extends('main.templates.main')
+@extends('main.templates.main-admin-utama')
 @section('title', 'Rumah Hijau Fakultas Biologi | Dashboard')
 @section('css-extras')
     <link rel="stylesheet" href="{{ asset('main/css/dashboard.css') }}">
@@ -641,30 +641,30 @@
 
             // SSE Start
             // Inisialisasi EventSource
-            const eventSource = new EventSource("{{ route('api.get.sse') }}");
+            // const eventSource = new EventSource("{{ route('api.get.sse') }}");
 
-            eventSource.onmessage = function(event) {
-                const response = JSON.parse(event.data);
+            // eventSource.onmessage = function(event) {
+            //     const response = JSON.parse(event.data);
 
-                updateTemperatureHumidity(response.tempHum.temperature, response.tempHum.humidity);
-                const temperature = response.tempHum.temperature;
-                updatePH(response.ph);
-                updateVolume(response.arusAir);
-                updateTDS(response.tds);
-                checkTemperature();
+            //     updateTemperatureHumidity(response.tempHum.temperature, response.tempHum.humidity);
+            //     const temperature = response.tempHum.temperature;
+            //     updatePH(response.ph);
+            //     updateVolume(response.arusAir);
+            //     updateTDS(response.tds);
+            //     checkTemperature();
 
-                window.myGauge.data.datasets[0].value = response.arusAir;
-                window.myGauge.update();
-                fm.setPercentage(response.ping);
-            };
+            //     window.myGauge.data.datasets[0].value = response.arusAir;
+            //     window.myGauge.update();
+            //     fm.setPercentage(response.ping);
+            // };
 
-            // Error Handler SSE
-            eventSource.onerror = function(error) {
-                console.error("SSE connection error:", error);
+            // // Error Handler SSE
+            // eventSource.onerror = function(error) {
+            //     console.error("SSE connection error:", error);
 
-                // Optional: Menutup koneksi jika error
-                // eventSource.close();
-            };
+            //     // Optional: Menutup koneksi jika error
+            //     // eventSource.close();
+            // };
             // SSE End
 
             // Alert SweetAlert2
@@ -674,13 +674,14 @@
                     title: 'Login',
                     html: `
                     <form id="login-form">
-                        <div>
-                            <label for="username">Username</label>
-                            <input type="text" id="username" class="swal2-input" placeholder="Enter your username">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Alamat Email</label>
+                            <input type="email" class="form-control" id="email" aria-describedby="emailHelp">
+                            <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
                         </div>
-                        <div>
-                            <label for="password">Password</label>
-                            <input type="password" id="password" class="swal2-input" placeholder="Enter your password">
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password">
                         </div>
                     </form>
                 `,

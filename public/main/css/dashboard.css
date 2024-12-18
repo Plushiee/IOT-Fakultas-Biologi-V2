@@ -147,3 +147,14 @@ i.fa-minus-circle {
     text-shadow: 0 0 10px red;
 }
 
+#login-form, #register-form {
+    text-align: start !important;
+}
+
+label {
+    font-weight: bold !important;
+}
+
+.swal2-actions {
+    margin-top: 0 !important;
+}

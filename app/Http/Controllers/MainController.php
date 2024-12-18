@@ -8,7 +8,7 @@ use PhpMqtt\Client\Facades\MQTT;
 
 class MainController extends Controller
 {
-    public function dashboard()
+    public function dashboardAdminUtama()
     {
         $pompaStatus = TabelPompaModel::latest()->first();
         if ($pompaStatus == null) {
@@ -17,7 +17,7 @@ class MainController extends Controller
             $pompaStatus->otomatis = false;
             $pompaStatus->suhu = 0;
         }
-        return view('main.dashboard', compact('pompaStatus'));
+        return view('main.dashboard-admin-utama', compact('pompaStatus'));
     }
     public function tabelPH()
     {
