@@ -19,9 +19,23 @@
             </li>
             <hr class="my-2 border border-light border-1 opacity-100">
             <li>
-                <a href="{{ route('main.dashboard') }}" class="{{ request()->routeIs('main.dashboard') ? 'active' : '' }}">
-                    Dashboard <i class="bi bi-speedometer2 float-end me-4"></i>
-                </a>
+                <h5 class="fs-5 text-light fw-bold mt-2 d-flex align-items-center justify-content-between">
+                    Utama
+                </h5>
+                <ul class="list-unstyled ms-4">
+                    <li>
+                        <a href="{{ route('admin.dashboard') }}"
+                            class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                            Dashboard <i class="bi bi-speedometer2 float-end me-4"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('admin.rangkuman') }}"
+                            class="{{ request()->routeIs('admin.rangkuman') ? 'active' : '' }}">
+                            Rangkuman <i class="bi bi-graph-up float-end me-4"></i>
+                        </a>
+                    </li>
+                </ul>
             </li>
             <hr class="mt-2 mb-0 border border-light border-1 opacity-100">
             <li>
@@ -30,44 +44,50 @@
                     Tabel Data
                     <i class="bi bi-caret-down-fill me-4" id="tabelCaret"></i>
                 </h5>
-                <ul class="list-unstyled ms-4 collapse" id="tabelDataList">
+                <ul class="list-unstyled ms-4 {{ request()->routeIs('admin.tabel.*') ? '' : 'collapse' }}"
+                    id="tabelDataList">
                     <li>
-                        <a href="{{ route('main.tabelTDS') }}"
-                            class="{{ request()->routeIs('main.tabelTDS') ? 'active' : '' }}">
+                        <a href="{{ route('admin.tabel.TDS') }}"
+                            class="{{ request()->routeIs('admin.tabel.TDS') ? 'active' : '' }}">
                             Tabel TDS <i class="bi bi-table float-end me-4"></i>
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('main.tabelUdara') }}"
-                            class="{{ request()->routeIs('main.tabelUdara') ? 'active' : '' }}">
+                        <a href="{{ route('admin.tabel.udara') }}"
+                            class="{{ request()->routeIs('admin.tabel.udara') ? 'active' : '' }}">
                             Tabel Udara <i class="bi bi-table float-end me-4"></i>
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('main.tabelArus') }}"
-                            class="{{ request()->routeIs('main.tabelArus') ? 'active' : '' }}">
+                        <a href="{{ route('admin.tabel.arus') }}"
+                            class="{{ request()->routeIs('admin.tabel.arus') ? 'active' : '' }}">
                             Tabel Arus Air <i class="bi bi-table float-end me-4"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('admin.tabel.reservoir') }}"
+                            class="{{ request()->routeIs('admin.tabel.reservoir') ? 'active' : '' }}">
+                            Tabel Reservoir <i class="bi bi-table float-end me-4"></i>
                         </a>
                     </li>
                 </ul>
             </li>
             <li>
                 <h5 class="fs-5 text-light fw-bold mt-2 d-flex align-items-center justify-content-between"
-                    id="accountToggle" style="cursor: pointer;">
+                    id="akunToggle" style="cursor: pointer;">
                     Akun
-                    <i class="bi bi-caret-down-fill me-4" id="accountCaret"></i>
+                    <i class="bi bi-caret-down-fill me-4" id="akunCaret"></i>
                 </h5>
-                <ul class="list-unstyled ms-4 d-none" id="accountList">
+                <ul class="list-unstyled ms-4  {{ request()->routeIs('admin.akun.*') ? '' : 'collapse' }}"
+                    id="akunList">
                     <li>
-                        <a href=""
-                           class="">
+                        <a href="" class="">
                             Pengaturan Akun <i class="bi bi-gear-fill float-end me-4"></i>
                         </a>
                     </li>
                     <li>
-                        <a href=""
-                           class="">
-                            Tambah Akun Baru <i class="bi bi-person-plus-fill float-end me-4"></i>
+                        <a href="" class="">
+                            Daftar Admin <i class="bi bi-person-plus-fill float-end me-4"></i>
                         </a>
                     </li>
                 </ul>

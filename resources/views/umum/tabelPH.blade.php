@@ -1,5 +1,5 @@
-@extends('main.templates.main')
-@section('title', 'Rumah Hijau Fakultas Biologi | TDS')
+@extends('umum.templates.main-umum-utama')
+@section('title', 'Rumah Hijau Fakultas Biologi | PH')
 @section('css-extras')
     <!-- Core Bootstrap Table -->
     <link rel="stylesheet" href="{{ asset('main/css/bootstrap-table.css') }}">
@@ -10,7 +10,7 @@
     <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="#">Home</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Tabel Arus Air</li>
+            <li class="breadcrumb-item active" aria-current="page">Tabel PH</li>
         </ol>
     </nav>
     <div class="row mb-1">
@@ -51,7 +51,7 @@
 
             <table id="table" data-show-export="true" data-pagination="true" data-page-list="[10, 25, 50, 100, 200, ALL]"
                 data-click-to-select="true" data-toolbar="#toolbar" data-search="true" data-show-toggle="true"
-                data-show-columns="true" data-ajax="APIGetArusAir">
+                data-show-columns="true" data-ajax="APIGetPH">
             </table>
         </div>
     </div>
@@ -89,9 +89,9 @@
                             title: 'Id Area'
                         },
                         {
-                            field: 'debit',
-                            title: 'Debit Air'
-                        }
+                            field: 'ph',
+                            title: 'PH'
+                        },
                     ],
                     data: [] // Ensure this is an empty array initially or loaded with initial data
                 });
@@ -103,10 +103,10 @@
             }).trigger('change');
         });
 
-        function APIGetArusAir(params) {
+        function APIGetPH(params) {
             $.ajax({
                 type: "POST",
-                url: "{{ route('api.get.arusAir') }}",
+                url: "{{ route('api.get.PH') }}",
                 data: {
                     _token: '{{ csrf_token() }}'
                 },
@@ -141,7 +141,7 @@
                     console.log('Filtering data from', startTime, 'to', endTime);
                     $.ajax({
                         type: "POST",
-                        url: "{{ route('api.get.arusAir') }}",
+                        url: "{{ route('api.get.PH') }}",
                         data: {
                             _token: '{{ csrf_token() }}',
                             start_time: startTime,
@@ -166,7 +166,7 @@
                 $('#filterForm')[0].reset();
                 $.ajax({
                     type: "POST",
-                    url: "{{ route('api.get.arusAir') }}",
+                    url: "{{ route('api.get.PH') }}",
                     data: {
                         _token: '{{ csrf_token() }}'
                     },

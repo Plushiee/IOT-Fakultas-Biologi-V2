@@ -20,13 +20,40 @@
     <link rel="stylesheet" href="{{ asset('main/css/navbar.css') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     @yield('css-extras')
+
+    <style>
+        /* Floating Button Styling */
+        .floating-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: rgb(225, 1, 1);
+            color: #fff;
+            border: none;
+            border-radius: 15%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease;
+        }
+
+        .floating-btn:hover {
+            background-color: rgb(181, 5, 5);
+        }
+    </style>
+
 </head>
 
 <body>
     {{-- @vite('resources/js/app.js') --}}
     <div id="wrapper">
         <!-- navbar -->
-        @include('main.templates.navbar-admin-utama')
+        @include('admin.templates.navbar')
         <!-- /#navbar-wrapper -->
 
         <!-- Page Content -->
@@ -35,15 +62,18 @@
                 <div class="row">
                     <div class="col-lg-12">
                         @yield('content')
+
+                        <!-- Floating Button Login -->
+                        <button class="floating-btn" id="btn-logout">
+                            <i class="bi bi-power"></i>
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
         <!-- /#page-content-wrapper -->
-
     </div>
     <!-- /#wrapper -->
-
 
     <!-- Core JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
@@ -64,30 +94,20 @@
         $(document).ready(function() {
             // Dropdown Tabel Data
             $('#tabelDataToggle').click(function() {
-                const caret = $('#tabelCaret');
-                const list = $('#tabelDataList');
+                const caretTabel = $('#tabelCaret');
+                const listTabbel = $('#tabelDataList');
 
-                if (list.is(':visible')) {
-                    list.slideUp(400); // Slide up animation
-                    caret.removeClass('bi-caret-up-fill').addClass('bi-caret-down-fill');
-                } else {
-                    list.slideDown(400); // Slide down animation
-                    caret.removeClass('bi-caret-down-fill').addClass('bi-caret-up-fill');
-                }
+                listTabbel.slideToggle(400); // Slide toggle animation
+                caretTabel.toggleClass('bi-caret-down-fill bi-caret-up-fill');
             });
 
             // Dropdown Pengaturan Akun
-            $('#accountToggle').click(function() {
-                const caret = $('#accountCaret');
-                const list = $('#accountList');
+            $('#akunToggle').click(function() {
+                const caretAkun = $('#akunCaret');
+                const listAkun = $('#akunList');
 
-                if (list.is(':visible')) {
-                    list.slideUp(400); // Slide up animation
-                    caret.removeClass('bi-caret-up-fill').addClass('bi-caret-down-fill');
-                } else {
-                    list.slideDown(400); // Slide down animation
-                    caret.removeClass('bi-caret-down-fill').addClass('bi-caret-up-fill');
-                }
+                listAkun.slideToggle(400); // Slide up and down animation
+                caretAkun.toggleClass('bi-caret-down-fill bi-caret-up-fill');
             });
         });
     </script>

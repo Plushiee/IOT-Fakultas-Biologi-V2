@@ -1,4 +1,4 @@
-@extends('main.templates.main-admin-utama')
+@extends('umum.templates.main-umum-utama')
 @section('title', 'Rumah Hijau Fakultas Biologi | Dashboard')
 @section('css-extras')
     <link rel="stylesheet" href="{{ asset('main/css/dashboard.css') }}">
@@ -86,11 +86,11 @@
                         <div class="col-6 pe-4">
                             <div class="card card-carousel rounded">
                                 <div class="card-body card-body-carousel">
-                                    <h5 class="card-title mb-3">PH</h5>
+                                    <h5 class="card-title mb-3">Status Mesin</h5>
                                     <div class="text-center my-4">
-                                        <h1 id="ph-display">0.0 </h1>
+                                        <h1 id="status"><i class="fa fa-circle red-shadow" aria-hidden="true"
+                                            id="iot-status-icon"></i>&nbsp;&nbsp; Offline</h1>
                                     </div>
-                                    <p class="card-text text-center pt-2 fw-bold" id="asam-basa">-</p>
                                 </div>
                             </div>
                         </div>
@@ -181,82 +181,6 @@
                 </div>
             </div>
         </div>
-        <div class="col-12 col-lg-6 d-none">
-            <div class="card">
-                <div class="card-body">
-                    <h3 class="card-title">Kontrol</h3>
-                    <div class="row align-items-center">
-                        <div class="col-8">
-                            <div class="container-fluid">
-                                <p class="card-text text-start">Otomatis</p>
-                            </div>
-                        </div>
-                        <div class="col-4 text-end">
-                            <div class="container-fluid">
-                                <div class="form-check form-switch float-end">
-                                    <input class="form-check-input" type="checkbox" role="switch" id="automatic-switch"
-                                        {{ $pompaStatus->otomatis == true ? 'checked' : '' }}>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row align-items-center" id="temperature-control">
-                        <div class="col-6 col-sm-7 col-md-9 col-lg-8 col-xl-6">
-                            <div class="container-fluid">
-                                <p class="card-text text-start">Suhu Menyala</p>
-                            </div>
-                        </div>
-                        <div class="col-6 col-sm-5 col-md-3 col-lg-4 col-xl-6">
-                            <div class="container-fluid">
-                                <div class="input-group custom-height p-0 mx-2">
-                                    <button class="btn btn-outline-secondary" type="button" id="btn-minus">
-                                        <i class="fa fa-minus-circle"></i>
-                                    </button>
-                                    <input type="number" class="form-control custom-height"
-                                        value="{{ $pompaStatus->suhu }}" min="0" max="100" step="1"
-                                        id="temperature-input">
-                                    <button class="btn btn-outline-secondary" type="button" id="btn-plus">
-                                        <i class="fa fa-plus-circle"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row align-items-center mt-1" id="status-pompa">
-                        <div class="col-6 col-sm-7 col-md-9 col-lg-8 col-xl-4 col-xxl-8">
-                            <div class="container-fluid">
-                                <p class="card-text text-start">Status Pompa</p>
-                            </div>
-                        </div>
-                        <div class="col-6 col-sm-5 col-md-3 col-lg-4 col-xl-8 col-xxl-4 ps-0">
-                            <div class="container-fluid">
-                                <p class="card-text text-end mx-2 fw-bold" id="pump-status-text">
-                                    Mati&nbsp;&nbsp; <i class="fa fa-circle red-shadow" aria-hidden="true"
-                                        id="pump-status-icon"></i>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row align-items-center" id="pump-control">
-                        <div class="col-8">
-                            <div class="container-fluid">
-                                <p class="card-text text-start">Pompa</p>
-                            </div>
-                        </div>
-                        <div class="col-4 text-end">
-                            <div class="container-fluid">
-                                <div class="form-check form-switch float-end">
-                                    <input class="form-check-input" type="checkbox" role="switch" id="pump-switch"
-                                        @if ($pompaStatus->status == 'nyala' && $pompaStatus->otomatis == false) checked @endif>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- Floating Button Login -->
@@ -310,143 +234,6 @@
                 }
             });
 
-            // Script untuk kontrol
-            var first = true;
-
-            // API mqtt Pompa
-            let isAutomatic = false;
-            let pumpStatus = 'mati';
-            let temperature = 5.0;
-
-            function updateVisibility() {
-                if ($('#automatic-switch').is(':checked')) {
-                    if (first) {
-                        first = false;
-                    }
-                    $('#pump-control').slideUp();
-                    $('#temperature-control, #status-pompa').slideDown();
-                    isAutomatic = true;
-                } else {
-                    $('#pump-control').slideDown();
-                    $('#temperature-control, #status-pompa').slideUp();
-
-                }
-
-                if ($('#pump-switch').is(':checked')) {
-                    $('#temperature-control, #status-pompa').slideUp();
-                    $('#automatic-switch').prop('disabled', true);
-                } else {
-                    $('#automatic-switch').prop('disabled', false);
-                }
-            }
-
-            // Initial state with a delay to allow elements to render properly before applying effects
-            $('#temperature-control, #status-pompa').hide();
-            setTimeout(updateVisibility, 100);
-
-            $('#automatic-switch').change(function() {
-                updateVisibility();
-            });
-
-            $('#pump-switch').change(function() {
-                updateVisibility();
-            });
-
-            $('#automatic-switch').change(function() {
-                isAutomatic = this.checked;
-                if (isAutomatic) {
-                    $('#pump-switch').prop('disabled', true);
-                    checkTemperature();
-                    alert.fire({
-                        icon: 'success',
-                        title: 'Sistem Otomatisasi Sedang Berjalan!'
-                    });
-                } else {
-                    $('#pump-switch').prop('disabled', false);
-                    sendMqttMessage('fakbiologi/pump', 'mati');
-                    sendPompaStatus('mati', false);
-                    alert.fire({
-                        icon: 'warning',
-                        title: 'Sistem Otomatisasi Dimatikan!'
-                    });
-                }
-            });
-
-            $('#pump-switch').change(function() {
-                if (this.checked) {
-                    sendMqttMessage('fakbiologi/pump', 'nyala');
-                    sendPompaStatus('nyala');
-                    alert.fire({
-                        icon: 'success',
-                        title: 'Pompa Dinyalakan!'
-                    });
-                } else {
-                    sendMqttMessage('fakbiologi/pump', 'mati');
-                    sendPompaStatus('mati');
-                    alert.fire({
-                        icon: 'warning',
-                        title: 'Pompa Dimatikan!'
-                    });
-                }
-            });
-
-            function updatePumpStatus(status) {
-                const statusTextElement = $('#pump-status-text');
-                const statusIconElement = $('#pump-status-icon');
-
-                if (status === 'nyala') {
-                    statusTextElement.html(
-                        'Menyala&nbsp;&nbsp; <i class="fa fa-circle green-shadow" aria-hidden="true" id="pump-status-icon"></i>'
-                    );
-                } else if (status === 'mati') {
-                    statusTextElement.html(
-                        'Mati&nbsp;&nbsp; <i class="fa fa-circle red-shadow" aria-hidden="true" id="pump-status-icon"></i>'
-                    );
-                }
-            }
-
-            function checkTemperature() {
-                if (isAutomatic) {
-                    let temperatureThreshold = parseFloat($('#temperature-input').val());
-
-                    if (temperature < temperatureThreshold && pumpStatus !== 'nyala') {
-                        sendMqttMessage('fakbiologi/pump', 'nyala');
-                        sendPompaStatus('nyala', true);
-                        pumpStatus = 'nyala'; // Update status pompa setelah mengirim API
-                        updatePumpStatus(pumpStatus);
-                    } else if (temperature >= temperatureThreshold && pumpStatus !== 'mati') {
-                        sendMqttMessage('fakbiologi/pump', 'mati');
-                        sendPompaStatus('mati', true);
-                        pumpStatus = 'mati'; // Update status pompa setelah mengirim API
-                        updatePumpStatus(pumpStatus);
-                    }
-
-                    // Hanya panggil kembali jika status masih otomatis
-                    setTimeout(checkTemperature, 2000);
-                }
-            }
-
-
-            // Function Send Pompa to Database
-            function sendPompaStatus(status, otomatis = false) {
-                $.ajax({
-                    url: '{{ route('api.post.pompa') }}',
-                    type: 'POST',
-                    data: {
-                        _token: '{{ csrf_token() }}',
-                        status: status,
-                        otomatis: otomatis,
-                        suhu: $('#temperature-input').val()
-                    },
-                    error: function(response) {
-                        alert.fire({
-                            icon: 'error',
-                            title: 'Gagal mengirim perintah ke API!'
-                        });
-                    }
-                });
-            }
-
             // MQTT Send to API
             function sendMqttMessage(topic, message) {
                 $.ajax({
@@ -491,19 +278,29 @@
             }
 
             // MQTT PH
-            function updatePH(ph) {
-                const asamBasa = document.getElementById('asam-basa');
-                var displayElement = $("#ph-display");
-                displayElement.html(ph);
-                if (ph < 7) {
-                    asamBasa.innerHTML = "Asam";
-                    asamBasa.style.color = "red";
-                } else if (ph > 7) {
-                    asamBasa.innerHTML = "Basa";
-                    asamBasa.style.color = "blue";
+            // function updatePH(ph) {
+            //     const asamBasa = document.getElementById('asam-basa');
+            //     var displayElement = $("#ph-display");
+            //     displayElement.html(ph);
+            //     if (ph < 7) {
+            //         asamBasa.innerHTML = "Asam";
+            //         asamBasa.style.color = "red";
+            //     } else if (ph > 7) {
+            //         asamBasa.innerHTML = "Basa";
+            //         asamBasa.style.color = "blue";
+            //     } else {
+            //         asamBasa.innerHTML = "Netral";
+            //         asamBasa.style.color = "black";
+            //     }
+            // }
+
+            // MQTT Status
+            function updateStatus(status) {
+                var displayElement = $("#status");
+                if (status == 1){
+                    displayElement.html("<i class='fa fa-circle green-shadow' aria-hidden='true' id='iot-status-icon'></i>&nbsp;&nbsp; Online");
                 } else {
-                    asamBasa.innerHTML = "Netral";
-                    asamBasa.style.color = "black";
+                    displayElement.html("<i class='fa fa-circle red-shadow' aria-hidden='true' id='iot-status-icon'></i>&nbsp;&nbsp; Offline");
                 }
             }
 

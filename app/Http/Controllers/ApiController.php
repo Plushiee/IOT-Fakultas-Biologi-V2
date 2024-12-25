@@ -126,6 +126,37 @@ class ApiController extends Controller
         return response()->json($formattedData);
     }
 
+    public function getPing(Request $request)
+    {
+        $query = TabelPingModel::query();
+
+        if ($request->has('start_time') && $request->has('end_time')) {
+            $startTime = $this->validDate($request->input('start_time'));
+            $endTime = $this->validDate($request->input('end_time'));
+            $query->whereBetween('created_at', [$startTime, $endTime]);
+
+            $ph = $query->get();
+        } else {
+            $ph = TabelPingModel::all();
+        }
+
+        $formattedData = [
+            'total' => $ph->count(),
+            'totalNotFiltered' => TabelPingModel::count(),
+            'rows' => $ph
+                ->map(function ($item) {
+                    return [
+                        'timestamp' => $item->created_at->format('Y-m-d H:i:s'),
+                        'id_area' => $item->id_area,
+                        'ping' => $item->ping,
+                    ];
+                })
+                ->toArray(),
+        ];
+
+        return response()->json($formattedData);
+    }
+
     public function getArusAir(Request $request)
     {
         $query = TabelArusAirModel::query();

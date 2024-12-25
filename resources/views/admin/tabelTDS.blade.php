@@ -1,4 +1,4 @@
-@extends('main.templates.main')
+@extends('admin.templates.main-admin-utama')
 @section('title', 'Rumah Hijau Fakultas Biologi | TDS')
 @section('css-extras')
     <!-- Core Bootstrap Table -->

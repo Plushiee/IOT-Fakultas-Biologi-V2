@@ -12,6 +12,7 @@ Route::post('/get/PH', [ApiController::class, 'getPH'])->name('api.get.PH');
 Route::post('/get/TDS', [ApiController::class, 'getTDS'])->name('api.get.TDS');
 Route::post('/get/udara', [ApiController::class, 'getUdara'])->name('api.get.udara');
 Route::post('/get/arusair', [ApiController::class, 'getArusAir'])->name('api.get.arusAir');
+Route::post('/get/ping', [ApiController::class, 'getPing'])->name('api.get.ping');
 // API GET End
 
 // API POST Start
