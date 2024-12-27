@@ -11,6 +11,8 @@ use App\Models\TabelPingModel;
 use App\Models\TabelTDSModel;
 use App\Models\TabelTempHumModel;
 use PhpMqtt\Client\Exceptions\MqttClientException;
+use App\Events\SSEUpdateEvent;
+use Illuminate\Support\Facades\Log;
 
 class MqttSubscribeCommand extends Command
 {
@@ -19,6 +21,17 @@ class MqttSubscribeCommand extends Command
     protected $tempHumData = [
         'temperature' => null,
         'humidity' => null,
+    ];
+
+    protected $koleksiData = [
+        'arusAir' => null,
+        'tds' => null,
+        'ph' => null,
+        'tempHum' => [
+            'temperature' => null,
+            'humidity' => null,
+        ],
+        'ping' => null,
     ];
 
     public function __construct()
@@ -50,10 +63,9 @@ class MqttSubscribeCommand extends Command
                 // Subscribe to each topic
                 foreach ($topics as $topic) {
                     $mqtt->subscribe($topic, function (string $topic, string $message) {
+                        // echo sprintf("Received message on topic [%s]: %s\n", $topic, $message);
 
                         $this->handleMessage($topic, $message);
-
-                        event(new MqttSubscribeEvent($message, $topic));
                     }, 0);
                 }
 
@@ -75,21 +87,69 @@ class MqttSubscribeCommand extends Command
     // Fungsi Handle message yang masuk
     protected function handleMessage($topic, $message)
     {
+        // Update data yang diterima berdasarkan topik
+        match ($topic) {
+            'fakbiologi/waterflow' => $this->koleksiData['arusAir'] = $message,
+            'fakbiologi/TDS' => $this->koleksiData['tds'] = $message,
+            'fakbiologi/PH' => $this->koleksiData['ph'] = $message,
+            'fakbiologi/humidityDHT' => $this->koleksiData['tempHum']['humidity'] = $message,
+            'fakbiologi/temperatureDHT' => $this->koleksiData['tempHum']['temperature'] = $message,
+            'fakbiologi/ping' => $this->koleksiData['ping'] = $message,
+            default => null,
+        };
+
+        // Kirim ke cache jika semua data telah diterima
+        if ($this->isAllDataCollected()) {
+            cache()->put('sse-update-event', $this->koleksiData, now()->addSeconds(5));
+
+            // Reset data setelah dikirim ke cache
+            $this->resetkoleksiData();
+        }
+
+        // Simpan ke database sesuai topik
+        $this->saveToDatabase($topic, $message);
+    }
+
+    // Fungsi untuk memeriksa apakah semua data telah terkumpul
+    protected function isAllDataCollected()
+    {
+        return isset(
+            $this->koleksiData['arusAir'],
+            $this->koleksiData['tds'],
+            $this->koleksiData['ph'],
+            $this->koleksiData['tempHum']['temperature'],
+            $this->koleksiData['tempHum']['humidity'],
+            $this->koleksiData['ping']
+        );
+    }
+
+    // Fungsi untuk mereset data yang dikumpulkan
+    protected function resetkoleksiData()
+    {
+        $this->koleksiData = [
+            'arusAir' => null,
+            'tds' => null,
+            'ph' => null,
+            'tempHum' => [
+                'temperature' => null,
+                'humidity' => null,
+            ],
+            'ping' => null,
+        ];
+    }
+
+    // Fungsi menyimpan data ke database
+    protected function saveToDatabase($topic, $message)
+    {
         switch ($topic) {
             case 'fakbiologi/waterflow':
-                if ($this->isBedaData('TabelArusAirModel', 'debit', $message)) {
-                    TabelArusAirModel::create(['id_area' => 1, 'debit' => $message]);
-                }
+                TabelArusAirModel::create(['id_area' => 1, 'debit' => $message]);
                 break;
             case 'fakbiologi/TDS':
-                if ($this->isBedaData('TabelTDSModel', 'ppm', $message)) {
-                    TabelTDSModel::create(['id_area' => 1, 'ppm' => $message]);
-                }
+                TabelTDSModel::create(['id_area' => 1, 'ppm' => $message]);
                 break;
             case 'fakbiologi/PH':
-                if ($this->isBedaData('TabelPHModel', 'ph', $message)) {
-                    TabelPHModel::create(['id_area' => 1, 'ph' => $message]);
-                }
+                TabelPHModel::create(['id_area' => 1, 'ph' => $message]);
                 break;
             case 'fakbiologi/humidityDHT':
                 $this->tempHumData['humidity'] = $message;
@@ -100,11 +160,7 @@ class MqttSubscribeCommand extends Command
                 $this->storeTempHumData();
                 break;
             case 'fakbiologi/ping':
-                if ($this->isBedaData('TabelPingModel', 'ping', $message)) {
-                    TabelPingModel::create(['id_area' => 1, 'ping' => $message]);
-                }
-                break;
-            default:
+                TabelPingModel::create(['id_area' => 1, 'ping' => $message]);
                 break;
         }
     }

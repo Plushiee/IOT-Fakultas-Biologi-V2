@@ -22,15 +22,21 @@
     @yield('css-extras')
 
     <style>
-        /* Floating Button Styling */
-        .floating-btn {
+        /* Floating Container */
+        .floating-container {
             position: fixed;
             bottom: 20px;
-            right: 20px;
+            right: 0px;
+            display: flex;
+            align-items: center;
+            transition: transform 0.3s ease;
+        }
+
+        /* Floating Button Styling */
+        .floating-btn {
             background-color: rgb(225, 1, 1);
             color: #fff;
             border: none;
-            border-radius: 15%;
             width: 60px;
             height: 60px;
             display: flex;
@@ -39,11 +45,42 @@
             font-size: 24px;
             cursor: pointer;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: background-color 0.3s ease;
+            transition: transform 0.3s ease, opacity 0.3s ease;
         }
 
         .floating-btn:hover {
-            background-color: rgb(181, 5, 5);
+            background-color: rgb(196, 0, 0);
+        }
+
+        .floating-btn.hidden {
+            transform: translateX(80px);
+            opacity: 0;
+        }
+
+        .floating-container.hidden {
+            transform: translateX(60px);
+            transition: transform 0.3s ease;
+        }
+
+        /* Toggle Button Styling */
+        .toggle-btn {
+            background-color: rgb(225, 1, 1);
+            color: #fff;
+            border: none;
+            border-top-left-radius: 15%;
+            border-bottom-left-radius: 15%;
+            width: 40px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease;
+        }
+
+        .toggle-btn:hover {
+            background-color: rgb(196, 0, 0);
         }
     </style>
 
@@ -63,10 +100,16 @@
                     <div class="col-lg-12">
                         @yield('content')
 
-                        <!-- Floating Button Login -->
-                        <button class="floating-btn" id="btn-logout">
-                            <i class="bi bi-power"></i>
-                        </button>
+                        <!-- Floating Button Logout -->
+                        <div class="floating-container hidden">
+                            <button class="toggle-btn" id="toggle-btn">
+                                <i class="bi bi-chevron-left"></i>
+                            </button>
+                            <button class="floating-btn" id="btn-logout">
+                                <i class="bi bi-power"></i>
+                            </button>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -89,7 +132,7 @@
     <script src="{{ asset('main/js/notification.js') }}"></script>
     @yield('jQuery-extras')
 
-    <!-- Script Untuk Dashboard -->
+    <!-- Script Untuk Master -->
     <script>
         $(document).ready(function() {
             // Dropdown Tabel Data
@@ -109,10 +152,31 @@
                 listAkun.slideToggle(400); // Slide up and down animation
                 caretAkun.toggleClass('bi-caret-down-fill bi-caret-up-fill');
             });
+
+            const $btnLogout = $('#btn-logout');
+            const $toggleBtn = $('#toggle-btn');
+            const $floatingContainer = $('.floating-container');
+            let isHidden = true;
+
+            // Mulai dalam keadaan tersembunyi
+            $btnLogout.addClass('hidden');
+
+            $toggleBtn.on('click', function() {
+                isHidden = !isHidden;
+                if (isHidden) {
+                    $btnLogout.addClass('hidden');
+                    $floatingContainer.addClass('hidden');
+                    $toggleBtn.html('<i class="bi bi-chevron-left"></i>');
+                } else {
+                    $btnLogout.removeClass('hidden');
+                    $floatingContainer.removeClass('hidden');
+                    $toggleBtn.html(
+                        '<i class="bi bi-chevron-right"></i>');
+                }
+            });
         });
     </script>
-    <!-- /Script Untuk Dashboard -->
-
+    <!-- /Script Untuk Master -->
     <!-- /Script Extras -->
 </body>
 

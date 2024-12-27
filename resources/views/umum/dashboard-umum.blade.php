@@ -2,33 +2,9 @@
 @section('title', 'Rumah Hijau Fakultas Biologi | Dashboard')
 @section('css-extras')
     <link rel="stylesheet" href="{{ asset('main/css/dashboard.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
-        integrity="sha384-k6RqeWeci5ZR/Lv4MR0sA0FfDOMm8gYhj6C+lVV1+ENLMBqI1n5DJRA5/tv8Z9o4" crossorigin="anonymous">
-    <style>
-        /* Floating Button Styling */
-        .floating-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: #077f0d;
-            color: #fff;
-            border: none;
-            border-radius: 15%;
-            width: 60px;
-            height: 60px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 24px;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: background-color 0.3s ease;
-        }
-
-        .floating-btn:hover {
-            background-color: #0056b3;
-        }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+        integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
 @endsection
 @section('content')
     <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
@@ -89,7 +65,7 @@
                                     <h5 class="card-title mb-3">Status Mesin</h5>
                                     <div class="text-center my-4">
                                         <h1 id="status"><i class="fa fa-circle red-shadow" aria-hidden="true"
-                                            id="iot-status-icon"></i>&nbsp;&nbsp; Offline</h1>
+                                                id="iot-status-icon"></i>&nbsp;&nbsp; Offline</h1>
                                     </div>
                                 </div>
                             </div>
@@ -182,78 +158,22 @@
             </div>
         </div>
     </div>
-
-    <!-- Floating Button Login -->
-    <button class="floating-btn" id="btn-login">
-        🔑
-    </button>
 @endsection
 
 @section('jQuery-extras')
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash/lodash.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
     <script src="{{ asset('main/js/js-fluid-meter.js') }}"></script>
-    <script src="https://code.jscharting.com/latest/jscharting.js"></script>
-    <script type="text/javascript" src="https://code.jscharting.com/latest/modules/types.js"></script>
+    <script src="https://code.jscharting.com/latest/jscharting.js" defer></script>
+    <script type="text/javascript" src="https://code.jscharting.com/latest/modules/types.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.min.js"
         integrity="sha512-L0Shl7nXXzIlBSUUPpxrokqq4ojqgZFQczTYlGjzONGTDAcLremjwaWv5A+EDLnxhQzY5xUZPWLOLqYRkY0Cbw=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://unpkg.com/chart.js@2.8.0/dist/Chart.bundle.js"></script>
-    <script src="https://unpkg.com/chartjs-gauge@0.3.0/dist/chartjs-gauge.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/emn178/chartjs-plugin-labels/src/chartjs-plugin-labels.js"></script>
+    <script src="https://unpkg.com/chart.js@2.8.0/dist/Chart.bundle.js" defer></script>
+    <script src="https://unpkg.com/chartjs-gauge@0.3.0/dist/chartjs-gauge.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/gh/emn178/chartjs-plugin-labels/src/chartjs-plugin-labels.js" defer></script>
     <script>
         $(document).ready(function() {
-            // Script for Number Input
-            const $inputNumber = $('#temperature-input');
-            const $btnPlus = $('#btn-plus');
-            const $btnMinus = $('#btn-minus');
-
-            $inputNumber.on('input', function() {
-                const currentValue = parseInt($inputNumber.val());
-                const maxValue = parseInt($inputNumber.attr('max'));
-                const minValue = parseInt($inputNumber.attr('min'));
-                if (currentValue > maxValue) {
-                    $inputNumber.val(maxValue);
-                } else if (currentValue < minValue) {
-                    $inputNumber.val(minValue);
-                }
-            });
-
-            $btnPlus.on('click', function() {
-                const currentValue = parseInt($inputNumber.val());
-                const maxValue = parseInt($inputNumber.attr('max'));
-                if (currentValue < maxValue) {
-                    $inputNumber.val(currentValue + parseInt($inputNumber.attr('step')));
-                }
-            });
-
-            $btnMinus.on('click', function() {
-                const currentValue = parseInt($inputNumber.val());
-                const minValue = parseInt($inputNumber.attr('min'));
-                if (currentValue > minValue) {
-                    $inputNumber.val(currentValue - parseInt($inputNumber.attr('step')));
-                }
-            });
-
-            // MQTT Send to API
-            function sendMqttMessage(topic, message) {
-                $.ajax({
-                    url: '{{ route('api.send.mqtt') }}',
-                    type: 'POST',
-                    data: {
-                        _token: '{{ csrf_token() }}',
-                        topic: topic,
-                        message: message
-                    },
-                    error: function(response) {
-                        alert.fire({
-                            icon: 'error',
-                            title: 'Gagal mengirim perintah ke MQTT!'
-                        });
-                    }
-                });
-            }
-
-
             // MQTT Udara
             function updateTemperatureHumidity(temperature, humidity) {
                 var displayElement = $("#temperature-humidity-display");
@@ -263,9 +183,9 @@
                 var currentHumidity = parseInt(currentText[1]) || 0;
 
                 if (temperature !== null) {
-                    currentTemperature = temperature.toFixed(1) + '° C';
+                    currentTemperature = temperature + '° C';
                 } else {
-                    currentTemperature = currentTemperature.toFixed(1) + '° C';
+                    currentTemperature = currentTemperature + '° C';
                 }
 
                 if (humidity !== null) {
@@ -277,30 +197,17 @@
                 displayElement.html(currentTemperature + "<br>" + currentHumidity);
             }
 
-            // MQTT PH
-            // function updatePH(ph) {
-            //     const asamBasa = document.getElementById('asam-basa');
-            //     var displayElement = $("#ph-display");
-            //     displayElement.html(ph);
-            //     if (ph < 7) {
-            //         asamBasa.innerHTML = "Asam";
-            //         asamBasa.style.color = "red";
-            //     } else if (ph > 7) {
-            //         asamBasa.innerHTML = "Basa";
-            //         asamBasa.style.color = "blue";
-            //     } else {
-            //         asamBasa.innerHTML = "Netral";
-            //         asamBasa.style.color = "black";
-            //     }
-            // }
-
             // MQTT Status
             function updateStatus(status) {
                 var displayElement = $("#status");
-                if (status == 1){
-                    displayElement.html("<i class='fa fa-circle green-shadow' aria-hidden='true' id='iot-status-icon'></i>&nbsp;&nbsp; Online");
+                if (status == 1) {
+                    displayElement.html(
+                        "<i class='fa fa-circle green-shadow' aria-hidden='true' id='iot-status-icon'></i>&nbsp;&nbsp; Online"
+                    );
                 } else {
-                    displayElement.html("<i class='fa fa-circle red-shadow' aria-hidden='true' id='iot-status-icon'></i>&nbsp;&nbsp; Offline");
+                    displayElement.html(
+                        "<i class='fa fa-circle red-shadow' aria-hidden='true' id='iot-status-icon'></i>&nbsp;&nbsp; Offline"
+                    );
                 }
             }
 
@@ -387,38 +294,22 @@
                     }
                 }
             };
+            var ctx = document.getElementById('chart').getContext('2d');
+            window.myGauge = new Chart(ctx, config);
 
-            window.onload = function() {
-                var ctx = document.getElementById('chart').getContext('2d');
-                window.myGauge = new Chart(ctx, config);
-            };
-
-            function updateTime() {
-                const timeElement = document.getElementById('current-time');
-                const iconElement = document.getElementById('time-icon');
+            setInterval(() => {
                 const now = new Date();
                 const hours = now.getHours();
                 const minutes = now.getMinutes();
                 const seconds = now.getSeconds();
-                const formattedTime =
-                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} WIB`;
+                $('#current-time').text(
+                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} WIB`
+                );
+                $('#time-icon').attr('class', hours >= 6 && hours < 18 ? 'fas fa-sun icon-sun' :
+                    'fas fa-moon icon-moon');
+            }, 1000);
 
-                timeElement.textContent = formattedTime;
-
-                if (hours >= 6 && hours < 18) { // Pagi (06:00 - 18:00)
-                    iconElement.className = 'fas fa-sun icon-sun';
-                } else { // Malam
-                    iconElement.className = 'fas fa-moon icon-moon';
-                }
-            }
-
-            // Update waktu setiap detik
-            setInterval(updateTime, 1000);
-
-            // Update waktu saat halaman dimuat
-            updateTime();
-
-            // API waktu
+            // API weather
             const apiKey = '5ab3a993f24b4255a8f64611240107';
             const city = 'Kotabaru,Yogyakarta';
             const apiUrl =
@@ -436,98 +327,48 @@
                 })
                 .catch(error => console.error('Error fetching weather data:', error));
 
-            // SSE Start
-            // Inisialisasi EventSource
-            // const eventSource = new EventSource("{{ route('api.get.sse') }}");
+            // EventSource (SSE) with Throttling
+            const eventSource = new EventSource("{{ route('api.get.sse') }}");
+            let retryTimeout = 1000; // Start with 1 second for reconnection attempts
 
-            // eventSource.onmessage = function(event) {
-            //     const response = JSON.parse(event.data);
+            const throttledUpdate = _.throttle((event) => {
+                try {
+                    const data = JSON.parse(event.data);
 
-            //     updateTemperatureHumidity(response.tempHum.temperature, response.tempHum.humidity);
-            //     const temperature = response.tempHum.temperature;
-            //     updatePH(response.ph);
-            //     updateVolume(response.arusAir);
-            //     updateTDS(response.tds);
-            //     checkTemperature();
+                    updateTemperatureHumidity(data.tempHum?.temperature ?? null, data.tempHum?.humidity ??
+                        null);
+                    updateVolume(data.arusAir || 0);
+                    updateTDS(data.tds || 0);
 
-            //     window.myGauge.data.datasets[0].value = response.arusAir;
-            //     window.myGauge.update();
-            //     fm.setPercentage(response.ping);
-            // };
+                    window.myGauge.data.datasets[0].value = data.arusAir || 0;
+                    window.myGauge.update();
 
-            // // Error Handler SSE
-            // eventSource.onerror = function(error) {
-            //     console.error("SSE connection error:", error);
+                    fm.setPercentage(data.ping || 0);
+                } catch (error) {
+                    console.error("Error parsing SSE response:", error);
+                }
+            }, 3000);
 
-            //     // Optional: Menutup koneksi jika error
-            //     // eventSource.close();
-            // };
-            // SSE End
+            eventSource.onmessage = throttledUpdate;
 
-            // Alert SweetAlert2
-            $('#btn-login').click(function(e) {
-                e.preventDefault();
-                Swal.fire({
-                    title: 'Login',
-                    html: `
-                    <form id="login-form">
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Alamat Email</label>
-                            <input type="email" class="form-control" id="email" aria-describedby="emailHelp">
-                            <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password">
-                        </div>
-                    </form>
-                `,
-                    showCancelButton: true,
-                    confirmButtonText: 'Login',
-                    preConfirm: () => {
-                        const username = document.getElementById('username').value;
-                        const password = document.getElementById('password').value;
+            eventSource.onerror = (error) => {
+                console.error("SSE error:", error);
+                eventSource.close(); // Close the connection
+                setTimeout(() => {
+                    eventSource = new EventSource("{{ route('api.get.sse') }}");
+                    retryTimeout = Math.min(retryTimeout * 2,
+                        10000);
+                }, retryTimeout);
+            };
 
-                        if (!username || !password) {
-                            Swal.showValidationMessage(
-                                'Please enter both username and password');
-                            return false;
-                        }
+            eventSource.onopen = () => {
+                console.log("SSE connection established.");
+                retryTimeout = 5000;
+            };
 
-                        // Return data for further processing
-                        return {
-                            username,
-                            password
-                        };
-                    }
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        console.log('Login data:', result.value);
-
-                        // Example: AJAX request (adjust URL and data as needed)
-                        fetch('/login', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': document.querySelector(
-                                            'meta[name="csrf-token"]')
-                                        .content
-                                },
-                                body: JSON.stringify(result.value)
-                            })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    Swal.fire('Success', 'Login successful!', 'success');
-                                } else {
-                                    Swal.fire('Error', data.message, 'error');
-                                }
-                            })
-                            .catch(error => {
-                                Swal.fire('Error', 'An error occurred!', 'error');
-                            });
-                    }
-                });
+            window.addEventListener("beforeunload", () => {
+                eventSource.close();
+                console.log("SSE connection closed.");
             });
         });
     </script>

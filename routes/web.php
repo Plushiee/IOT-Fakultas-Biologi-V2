@@ -12,14 +12,19 @@ use App\Http\Controllers\UmumController;
 // Admin
 Route::get('/admin/dashboard', [AdminController::class, 'dashboardAdmin'])->name('admin.dashboard');
 Route::get('/admin/rangkuman', [AdminController::class, 'rangkuman'])->name('admin.rangkuman');
+Route::get('/admin/rangkuman/cetak', [AdminController::class, 'rangkumanCetak'])->name('admin.rangkuman.cetak');
 Route::get('/admin/tabel-ph', [AdminController::class, 'tabelPH'])->name('admin.tabel.PH');
 Route::get('/admin/tabel-tds', [AdminController::class, 'tabelTDS'])->name('admin.tabel.TDS');
 Route::get('/admin/tabel-udara', [AdminController::class, 'tabelUdara'])->name('admin.tabel.udara');
 Route::get('/admin/tabel-arus', [AdminController::class, 'tabelArus'])->name('admin.tabel.arus');
+Route::get('/admin/tabel-reservoir', [AdminController::class, 'tabelReservoir'])->name('admin.tabel.reservoir');
+Route::get('/admin/pengaturan-akun', [AdminController::class, 'pengaturanAkun'])->name('admin.akun.pengaturan');
+
 
 // Umum
 Route::get('/', [UmumController::class, 'dashboardUmum'])->name('umum.dashboard');
 Route::get('/rangkuman', [UmumController::class, 'rangkuman'])->name('umum.rangkuman');
+Route::get('/rangkuman/cetak', [UmumController::class, 'rangkumanCetak'])->name('umum.rangkuman.cetak');
 Route::get('/tabel-ph', [UmumController::class, 'tabelPH'])->name('umum.tabel.PH');
 Route::get('/tabel-tds', [UmumController::class, 'tabelTDS'])->name('umum.tabel.TDS');
 Route::get('/tabel-udara', [UmumController::class, 'tabelUdara'])->name('umum.tabel.udara');

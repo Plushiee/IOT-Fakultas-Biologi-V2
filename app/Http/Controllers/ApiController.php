@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\TabelArusAirModel;
 use App\Models\TabelPingModel;
 use Illuminate\Http\RedirectResponse;
+use App\Events\SSEUpdateEvent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use PhpMqtt\Client\Facades\MQTT;
@@ -12,6 +13,8 @@ use App\Models\TabelPHModel;
 use App\Models\TabelPompaModel;
 use App\Models\TabelTDSModel;
 use App\Models\TabelTempHumModel;
+
+use Illuminate\Support\Facades\Event as FacadesEvent;
 
 class ApiController extends Controller
 {
@@ -232,39 +235,87 @@ class ApiController extends Controller
         return response()->json($formattedData);
     }
 
+    // public function getSSE()
+    // {
+    //     return response()->stream(
+    //         function () {
+    //             while (!connection_aborted()) {
+    //                 // Ambil data terbaru
+    //                 $ph = optional(TabelPHModel::latest()->first())->ph ?? 0;
+    //                 $tds = optional(TabelTDSModel::latest()->first())->ppm ?? 0;
+    //                 $tempHum = [
+    //                     'temperature' => optional(TabelTempHumModel::latest()->first())->temperature ?? 0,
+    //                     'humidity' => optional(TabelTempHumModel::latest()->first())->humidity ?? 0,
+    //                 ];
+    //                 $arusAir = optional(TabelArusAirModel::latest()->first())->debit ?? 0;
+    //                 $pompa = TabelPompaModel::latest()->first();
+    //                 $ping = optional(TabelPingModel::latest()->first())->ping ?? 0;
+
+    //                 $formattedData = [
+    //                     'ph' => $ph,
+    //                     'ping' => $ping,
+    //                     'tds' => $tds,
+    //                     'tempHum' => $tempHum,
+    //                     'arusAir' => $arusAir,
+    //                     'pompa' => $pompa,
+    //                 ];
+
+    //                 // Kirim data sebagai event SSE
+    //                 echo 'data: ' . json_encode($formattedData) . "\n\n";
+    //                 ob_flush();
+    //                 flush();
+
+    //                 // Tunggu sebelum mengirim data berikutnya (interval 1 detik)
+    //                 sleep(1);
+    //             }
+    //         },
+    //         200,
+    //         [
+    //             'Content-Type' => 'text/event-stream',
+    //             'Cache-Control' => 'no-cache',
+    //             'Connection' => 'keep-alive',
+    //             'X-Accel-Buffering' => 'no',
+    //         ],
+    //     );
+    // }
+
     public function getSSE()
     {
+        // Set unlimited execution time
+        set_time_limit(0);
+
         return response()->stream(
             function () {
                 while (!connection_aborted()) {
-                    // Ambil data terbaru
-                    $ph = optional(TabelPHModel::latest()->first())->ph ?? 0;
-                    $tds = optional(TabelTDSModel::latest()->first())->ppm ?? 0;
-                    $tempHum = [
-                        'temperature' => optional(TabelTempHumModel::latest()->first())->temperature ?? 0,
-                        'humidity' => optional(TabelTempHumModel::latest()->first())->humidity ?? 0,
-                    ];
-                    $arusAir = optional(TabelArusAirModel::latest()->first())->debit ?? 0;
-                    $pompa = TabelPompaModel::latest()->first();
-                    $ping = optional(TabelPingModel::latest()->first())->ping ?? 0;
+                    // Ambil data dari cache atau gunakan default jika tidak ada
+                    $cachedData = cache('sse-update-event', []);
 
+                    // Validasi format data dan gunakan default jika tidak sesuai
                     $formattedData = [
-                        'ph' => $ph,
-                        'ping' => $ping,
-                        'tds' => $tds,
-                        'tempHum' => $tempHum,
-                        'arusAir' => $arusAir,
-                        'pompa' => $pompa,
+                        'ph' => $cachedData['ph'] ?? 0,
+                        'ping' => $cachedData['ping'] ?? 0,
+                        'tds' => $cachedData['tds'] ?? 0,
+                        'tempHum' => [
+                            'temperature' => $cachedData['tempHum']['temperature'] ?? 0,
+                            'humidity' => $cachedData['tempHum']['humidity'] ?? 0,
+                        ],
+                        'arusAir' => $cachedData['arusAir'] ?? 0,
+                        'pompa' => $cachedData['pompa'] ?? null,
                     ];
 
                     // Kirim data sebagai event SSE
                     echo 'data: ' . json_encode($formattedData) . "\n\n";
-                    ob_flush();
+
+                    // Flush buffer untuk menghindari tumpukan data
+                    @ob_flush();
                     flush();
 
                     // Tunggu sebelum mengirim data berikutnya (interval 1 detik)
                     sleep(1);
                 }
+
+                // Hentikan script jika koneksi ditutup
+                exit;
             },
             200,
             [

@@ -1,4 +1,4 @@
-@extends('umum.templates.main-umum-utama')
+@extends('admin.templates.main-admin-utama')
 @section('title', 'Rumah Hijau Fakultas Biologi | Rangkuman Data')
 @section('css-extras')
     <link rel="stylesheet" href="{{ asset('main/css/dashboard.css') }}">
