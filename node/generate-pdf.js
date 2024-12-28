@@ -5,7 +5,11 @@ import puppeteer from 'puppeteer';
     const inputFile = args[0]; // Jalur file HTML
     const outputFile = args[1]; // Jalur file PDF
 
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({
+        cacheDirectory: 'C:\\Users\\Administrator\\.puppeteer',
+        headless: true,
+    });
+
     const page = await browser.newPage();
 
     try {

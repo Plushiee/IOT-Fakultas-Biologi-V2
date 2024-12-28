@@ -149,6 +149,11 @@ class UmumController extends Controller
 
             exec($command . ' 2>&1', $output, $returnVar);
 
+            Log::info('Current working directory: ' . getcwd());
+            Log::info('Command executed: ' . $command);
+            Log::info("Command output: " . implode("\n", $output));
+            Log::info("Command return value: $returnVar");
+
             // Jika proses gagal
             if ($returnVar !== 0 || !file_exists($pdfPath)) {
                 Log::error("Proses generate PDF gagal: " . implode("\n", $output));
