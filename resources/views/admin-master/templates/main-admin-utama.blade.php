@@ -6,6 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="IOT - Fakultas Biologi">
     <meta name="author" content="Anthonius Adi Nugroho, S.T., M.Cs., Nikolaus Pastika Bara Satyaradi">
+    <meta name="keywords" content="IOT, Fakultas Biologi, Universitas Jember">
+    <meta name="robots" content="index, follow">
+    <meta name="googlebot" content="index, follow">
+    <meta name="bingbot" content="index, follow">
+    <meta name="referrer" content="no-referrer">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>@yield('title')</title>
 
@@ -90,7 +96,7 @@
     {{-- @vite('resources/js/app.js') --}}
     <div id="wrapper">
         <!-- navbar -->
-        @include('admin.templates.navbar')
+        @include('admin-master.templates.navbar')
         <!-- /#navbar-wrapper -->
 
         <!-- Page Content -->
@@ -142,6 +148,15 @@
 
                 listTabbel.slideToggle(400); // Slide toggle animation
                 caretTabel.toggleClass('bi-caret-down-fill bi-caret-up-fill');
+            });
+
+            // Dropdown Pengaturan Akun
+            $('#akunToggle').click(function() {
+                const caretAkun = $('#akunCaret');
+                const listAkun = $('#akunList');
+
+                listAkun.slideToggle(400); // Slide up and down animation
+                caretAkun.toggleClass('bi-caret-down-fill bi-caret-up-fill');
             });
 
             const $btnLogout = $('#btn-logout');

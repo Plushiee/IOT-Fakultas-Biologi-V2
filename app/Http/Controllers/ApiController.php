@@ -13,8 +13,11 @@ use App\Models\TabelPHModel;
 use App\Models\TabelPompaModel;
 use App\Models\TabelTDSModel;
 use App\Models\TabelTempHumModel;
-
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event as FacadesEvent;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class ApiController extends Controller
 {
@@ -211,6 +214,161 @@ class ApiController extends Controller
         return response()->json(['success' => 'Status pompa berhasil diubah!']);
     }
 
+    public function updateAdmin(Request $request)
+    {
+        // Map field ke key yang benar
+        if ($request->has('field') && $request->has('value')) {
+            $request[$request->input('field')] = $request->input('value');
+        }
+
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|exists:akun,id',
+            'email' => 'sometimes|email',
+            'role' => 'sometimes|in:admin,admin-master',
+            'nama' => 'sometimes|string|max:255',
+            'hari' => 'sometimes|string|max:50',
+            'jam' => 'sometimes|string|max:50',
+            'fakultas' => 'sometimes|string|max:255',
+            'prodi' => 'sometimes|string|max:255',
+            'semester' => 'sometimes|integer|min:1|max:14',
+            'foto' => 'sometimes|string',
+            'nomor_telepon' => 'sometimes|string|max:20',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'error' => true,
+                'messages' => $validator->errors(),
+            ], 422);
+        }
+
+        $user = User::where('id', $request->input('id'))->first();
+
+        if (!$user) {
+            return response()->json(['error' => 'User tidak ditemukan!'], 404);
+        }
+
+        $fields = $request->only([
+            'email',
+            'role',
+            'nama',
+            'hari',
+            'jam',
+            'fakultas',
+            'prodi',
+            'semester',
+            'foto',
+            'nomor_telepon'
+        ]);
+
+        foreach ($fields as $key => $value) {
+            $user->{$key} = $value;
+        }
+
+        if (!$user->save()) {
+            return response()->json(['error' => 'Gagal menyimpan perubahan data!'], 500);
+        }
+
+        return response()->json(['success' => 'Data user berhasil diubah!']);
+    }
+
+    public function updateAdminPhoto(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|exists:akun,id',
+            'photo' => 'required|image|max:3072', // Maksimal 3MB
+        ]);
+
+        $userId = $request->input('id');
+        $image = $request->file('photo');
+
+        // Simpan gambar ke folder storage
+        $imagePath = $image->storeAs('public/photos/' . $userId, 'user_' . $userId . '.' . $image->getClientOriginalExtension());
+
+        // Simpan path ke database
+        $user = User::where('id', $userId)->first();
+        if ($user) {
+            $user->foto = str_replace('public/', '', $imagePath); // Simpan path relatif
+            $user->save();
+        }
+
+        $image = asset('storage/' . $user->foto);
+
+        return response()->json(['message' => 'Photo updated successfully!', 'image' => $image], 200);
+    }
+
+    public function updateJamKerja(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|exists:akun,id',
+            'start' => 'required|string|max:50',
+            'end' => 'required|string|max:50',
+        ]);
+
+
+        $user = User::where('id', $request->id)->first();
+        if ($user) {
+            $user->jam = json_encode(['s' => $request->start, 'e' => $request->end]);
+            $user->save();
+        } else {
+            return response()->json(['message' => 'User tidak ditemukan!'], 404);
+        }
+
+        return response()->json(['message' => 'Jam kerja berhasil diupdate!'], 200);
+    }
+
+    public function updateHariKerja(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|exists:akun,id',
+            'hari' => 'required|string|max:50',
+        ]);
+
+        $user = User::where('id', $request->id)->first();
+        if ($user) {
+            $user->hari = $request->hari;
+            $user->save();
+        } else {
+            return response()->json(['message' => 'User tidak ditemukan!'], 404);
+        }
+
+        return response()->json(['message' => 'Hari kerja berhasil diupdate!'], 200);
+    }
+
+    public function getPhoto(Request $request)
+    {
+        $userId = $request->id;
+
+        $user = User::where('id', $userId)->first();
+
+        if ($user && $user->foto) {
+            $imagePath = asset('storage/' . $user->foto);
+        } else {
+            $imagePath = asset('main/img/default-avatar.jpg');
+        }
+
+        return response()->json(['image' => $imagePath]);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|exists:akun,id',
+        ]);
+
+        $user = User::where('id', $request->id)->first();
+
+        if ($user) {
+            $password = substr(md5(uniqid()), 0, 16);
+            $user->password = bcrypt($password);
+            $user->save();
+        } else {
+            return response()->json(['message' => 'User tidak ditemukan!'], 404);
+        }
+
+        return response()->json(['message' => 'Password berhasil direset!', 'new_password' => $password], 200);
+    }
+
     public function getDashboard()
     {
         $ph = optional(TabelPHModel::latest()->first())->ph ?? 0;
@@ -235,49 +393,58 @@ class ApiController extends Controller
         return response()->json($formattedData);
     }
 
-    // public function getSSE()
-    // {
-    //     return response()->stream(
-    //         function () {
-    //             while (!connection_aborted()) {
-    //                 // Ambil data terbaru
-    //                 $ph = optional(TabelPHModel::latest()->first())->ph ?? 0;
-    //                 $tds = optional(TabelTDSModel::latest()->first())->ppm ?? 0;
-    //                 $tempHum = [
-    //                     'temperature' => optional(TabelTempHumModel::latest()->first())->temperature ?? 0,
-    //                     'humidity' => optional(TabelTempHumModel::latest()->first())->humidity ?? 0,
-    //                 ];
-    //                 $arusAir = optional(TabelArusAirModel::latest()->first())->debit ?? 0;
-    //                 $pompa = TabelPompaModel::latest()->first();
-    //                 $ping = optional(TabelPingModel::latest()->first())->ping ?? 0;
+    public function getUser()
+    {
+        $data = User::all();
 
-    //                 $formattedData = [
-    //                     'ph' => $ph,
-    //                     'ping' => $ping,
-    //                     'tds' => $tds,
-    //                     'tempHum' => $tempHum,
-    //                     'arusAir' => $arusAir,
-    //                     'pompa' => $pompa,
-    //                 ];
+        $formattedData = [
+            'total' => $data->count(),
+            'totalNotFiltered' => User::count(),
+            'rows' => $data
+                ->map(function ($item) {
+                    $jam = json_decode($item->jam, true);
 
-    //                 // Kirim data sebagai event SSE
-    //                 echo 'data: ' . json_encode($formattedData) . "\n\n";
-    //                 ob_flush();
-    //                 flush();
+                    return [
+                        'id' => $item->id,
+                        'email' => $item->email,
+                        'nama' => $item->nama,
+                        'role' => $item->role,
+                        'hari' => $item->hari,
+                        'jam' => $jam,
+                        'fakultas' => $item->fakultas,
+                        'prodi' => $item->prodi,
+                        'semester' => $item->semester,
+                        'foto' => $item->foto,
+                        'nomor_telepon' => $item->nomor_telepon,
+                        // 'timestamp' => $item->created_at->format('Y-m-d H:i:s'),
+                    ];
+                })
+                ->toArray(),
+        ];
 
-    //                 // Tunggu sebelum mengirim data berikutnya (interval 1 detik)
-    //                 sleep(1);
-    //             }
-    //         },
-    //         200,
-    //         [
-    //             'Content-Type' => 'text/event-stream',
-    //             'Cache-Control' => 'no-cache',
-    //             'Connection' => 'keep-alive',
-    //             'X-Accel-Buffering' => 'no',
-    //         ],
-    //     );
-    // }
+        return response()->json($formattedData);
+    }
+
+    public function deleteAdmin(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|exists:akun,id',
+        ]);
+
+        // if ($request->id == Auth::user()->id) {
+        //     return response()->json(['message' => 'User yang digunakan tidak dapat dihapus!'], 403);
+        // }
+
+        $user = User::where('id', $request->id)->first();
+
+        if ($user) {
+            // $user->delete();
+        } else {
+            return response()->json(['message' => 'User tidak ditemukan!'], 404);
+        }
+
+        return response()->json(['message' => 'User berhasil dihapus!'], 200);
+    }
 
     public function getSSE()
     {

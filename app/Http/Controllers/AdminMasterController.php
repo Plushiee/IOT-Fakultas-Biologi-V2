@@ -8,10 +8,11 @@ use Illuminate\Http\Request;
 use App\Models\TabelPompaModel;
 use App\Models\TabelTDSModel;
 use App\Models\TabelTempHumModel;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
-class AdminController extends Controller
+class AdminMasterController extends Controller
 {
     private function getRangkumanData($s = null, $e = null)
     {
@@ -104,7 +105,7 @@ class AdminController extends Controller
             $pompaStatus->otomatis = false;
             $pompaStatus->suhu = 0;
         }
-        return view('admin.dashboard-admin', compact('pompaStatus'));
+        return view('admin-master.dashboard-admin', compact('pompaStatus'));
     }
 
     public function rangkuman(Request $request)
@@ -114,7 +115,7 @@ class AdminController extends Controller
 
         $data = $this->getRangkumanData($s, $e);
 
-        return view('admin.rangkuman', ['data' => $data]);
+        return view('admin-master.rangkuman', ['data' => $data]);
     }
 
     public function rangkumanCetak(Request $request)
@@ -177,23 +178,43 @@ class AdminController extends Controller
 
     public function tabelPH()
     {
-        return view('admin.tabelPH');
+        return view('admin-master.tabelPH');
     }
     public function tabelTDS()
     {
-        return view('admin.tabelTDS');
+        return view('admin-master.tabelTDS');
     }
     public function tabelUdara()
     {
-        return view('admin.tabelUdara');
+        return view('admin-master.tabelUdara');
     }
     public function tabelArus()
     {
-        return view('admin.tabelArusAir');
+        return view('admin-master.tabelArusAir');
     }
 
     public function tabelReservoir()
     {
-        return view('admin.tabelReservoir');
+        return view('admin-master.tabelReservoir');
+    }
+
+    public function pengaturanAkun()
+    {
+        return view('admin-master.akun');
+    }
+
+    public function daftarAdmin() {
+        return view('admin-master.daftar-admin');
+    }
+
+    public function viewAdmin(Request $request) {
+        $id = $request->route('id');
+        $data = User::find($id);
+
+        $jam = json_decode($data->jam, true);
+
+        $data->jam = $jam;
+
+        return view('admin-master.view-admin', compact('data'));
     }
 }

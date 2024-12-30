@@ -3,6 +3,7 @@
 use App\Events\testingEvent;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AdminMasterController;
 use App\Http\Controllers\UmumController;
 
 // Route::get('/', function () {
@@ -18,7 +19,19 @@ Route::get('/admin/tabel-tds', [AdminController::class, 'tabelTDS'])->name('admi
 Route::get('/admin/tabel-udara', [AdminController::class, 'tabelUdara'])->name('admin.tabel.udara');
 Route::get('/admin/tabel-arus', [AdminController::class, 'tabelArus'])->name('admin.tabel.arus');
 Route::get('/admin/tabel-reservoir', [AdminController::class, 'tabelReservoir'])->name('admin.tabel.reservoir');
-Route::get('/admin/pengaturan-akun', [AdminController::class, 'pengaturanAkun'])->name('admin.akun.pengaturan');
+
+// Admin Master
+Route::get('/admin-master/dashboard', [AdminMasterController::class, 'dashboardAdmin'])->name('admin-master.dashboard');
+Route::get('/admin-master/rangkuman', [AdminMasterController::class, 'rangkuman'])->name('admin-master.rangkuman');
+Route::get('/admin-master/rangkuman/cetak', [AdminMasterController::class, 'rangkumanCetak'])->name('admin-master.rangkuman.cetak');
+Route::get('/admin-master/tabel-ph', [AdminMasterController::class, 'tabelPH'])->name('admin-master.tabel.PH');
+Route::get('/admin-master/tabel-tds', [AdminMasterController::class, 'tabelTDS'])->name('admin-master.tabel.TDS');
+Route::get('/admin-master/tabel-udara', [AdminMasterController::class, 'tabelUdara'])->name('admin-master.tabel.udara');
+Route::get('/admin-master/tabel-arus', [AdminMasterController::class, 'tabelArus'])->name('admin-master.tabel.arus');
+Route::get('/admin-master/tabel-reservoir', [AdminMasterController::class, 'tabelReservoir'])->name('admin-master.tabel.reservoir');
+Route::get('/admin-master/pengaturan-akun', [AdminMasterController::class, 'pengaturanAkun'])->name('admin-master.akun.pengaturan');
+Route::get('/admin-master/daftar-admin', [AdminMasterController::class, 'daftarAdmin'])->name('admin-master.akun.daftar-admin');
+Route::get('/admin-master/daftar-admin/view/{id}', [AdminMasterController::class, 'viewAdmin'])->name('admin-master.akun.daftar-admin.view');
 
 
 // Umum
