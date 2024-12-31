@@ -132,6 +132,15 @@
     <script src="{{ asset('main/js/notification.js') }}"></script>
     @yield('jQuery-extras')
 
+    @if (session('success'))
+        <script>
+            alert.fire({
+                icon: 'success',
+                title: "{{ session('success') }}",
+            });
+        </script>
+    @endif
+
     <!-- Script Untuk Master -->
     <script>
         $(document).ready(function() {

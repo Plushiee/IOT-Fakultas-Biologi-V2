@@ -328,7 +328,7 @@
                 .catch(error => console.error('Error fetching weather data:', error));
 
             // EventSource (SSE) with Throttling
-            const eventSource = new EventSource("{{ route('api.get.sse') }}");
+            window.eventSource = new EventSource("{{ route('api.get.sse') }}");
             let retryTimeout = 1000; // Start with 1 second for reconnection attempts
 
             const throttledUpdate = _.throttle((event) => {
@@ -349,25 +349,25 @@
                 }
             }, 3000);
 
-            eventSource.onmessage = throttledUpdate;
+            window.eventSource.onmessage = throttledUpdate;
 
-            eventSource.onerror = (error) => {
+            window.eventSource.onerror = (error) => {
                 console.error("SSE error:", error);
-                eventSource.close(); // Close the connection
+                window.eventSource.close(); // Close the connection
                 setTimeout(() => {
-                    eventSource = new EventSource("{{ route('api.get.sse') }}");
+                    window.eventSource = new window.EventSource("{{ route('api.get.sse') }}");
                     retryTimeout = Math.min(retryTimeout * 2,
                         10000);
                 }, retryTimeout);
             };
 
-            eventSource.onopen = () => {
+            window.eventSource.onopen = () => {
                 console.log("SSE connection established.");
                 retryTimeout = 5000;
             };
 
             window.addEventListener("beforeunload", () => {
-                eventSource.close();
+                window.eventSource.close();
                 console.log("SSE connection closed.");
             });
         });

@@ -1,45 +1,59 @@
 <?php
 
-use App\Events\testingEvent;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminMasterController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UmumController;
+use Illuminate\Support\Facades\Auth;
 
-// Route::get('/', function () {
-//     return view('welcome');
-// });
+// Kelompok Rute untuk Admin
+Route::middleware(['auth','role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', [AdminController::class, 'dashboardAdmin'])->name('dashboard');
+    Route::get('/rangkuman', [AdminController::class, 'rangkuman'])->name('rangkuman');
+    Route::get('/rangkuman/cetak', [AdminController::class, 'rangkumanCetak'])->name('rangkuman.cetak');
+    Route::get('/tabel-ph', [AdminController::class, 'tabelPH'])->name('tabel.PH');
+    Route::get('/tabel-tds', [AdminController::class, 'tabelTDS'])->name('tabel.TDS');
+    Route::get('/tabel-udara', [AdminController::class, 'tabelUdara'])->name('tabel.udara');
+    Route::get('/tabel-arus', [AdminController::class, 'tabelArus'])->name('tabel.arus');
+    Route::get('/tabel-reservoir', [AdminController::class, 'tabelReservoir'])->name('tabel.reservoir');
+});
 
-// Admin
-Route::get('/admin/dashboard', [AdminController::class, 'dashboardAdmin'])->name('admin.dashboard');
-Route::get('/admin/rangkuman', [AdminController::class, 'rangkuman'])->name('admin.rangkuman');
-Route::get('/admin/rangkuman/cetak', [AdminController::class, 'rangkumanCetak'])->name('admin.rangkuman.cetak');
-Route::get('/admin/tabel-ph', [AdminController::class, 'tabelPH'])->name('admin.tabel.PH');
-Route::get('/admin/tabel-tds', [AdminController::class, 'tabelTDS'])->name('admin.tabel.TDS');
-Route::get('/admin/tabel-udara', [AdminController::class, 'tabelUdara'])->name('admin.tabel.udara');
-Route::get('/admin/tabel-arus', [AdminController::class, 'tabelArus'])->name('admin.tabel.arus');
-Route::get('/admin/tabel-reservoir', [AdminController::class, 'tabelReservoir'])->name('admin.tabel.reservoir');
+// Kelompok Rute untuk Admin Master
+Route::middleware(['auth', 'role:admin-master'])->prefix('admin-master')->name('admin-master.')->group(function () {
+    Route::get('/dashboard', [AdminMasterController::class, 'dashboardAdmin'])->name('dashboard');
+    Route::get('/rangkuman', [AdminMasterController::class, 'rangkuman'])->name('rangkuman');
+    Route::get('/rangkuman/cetak', [AdminMasterController::class, 'rangkumanCetak'])->name('rangkuman.cetak');
+    Route::get('/tabel-ph', [AdminMasterController::class, 'tabelPH'])->name('tabel.PH');
+    Route::get('/tabel-tds', [AdminMasterController::class, 'tabelTDS'])->name('tabel.TDS');
+    Route::get('/tabel-udara', [AdminMasterController::class, 'tabelUdara'])->name('tabel.udara');
+    Route::get('/tabel-arus', [AdminMasterController::class, 'tabelArus'])->name('tabel.arus');
+    Route::get('/tabel-reservoir', [AdminMasterController::class, 'tabelReservoir'])->name('tabel.reservoir');
+    Route::get('/pengaturan-akun', [AdminMasterController::class, 'pengaturanAkun'])->name('akun.pengaturan');
+    Route::get('/daftar-admin', [AdminMasterController::class, 'daftarAdmin'])->name('akun.daftar-admin');
+    Route::get('/daftar-admin/view/{id}', [AdminMasterController::class, 'viewAdmin'])->name('akun.daftar-admin.view');
+});
 
-// Admin Master
-Route::get('/admin-master/dashboard', [AdminMasterController::class, 'dashboardAdmin'])->name('admin-master.dashboard');
-Route::get('/admin-master/rangkuman', [AdminMasterController::class, 'rangkuman'])->name('admin-master.rangkuman');
-Route::get('/admin-master/rangkuman/cetak', [AdminMasterController::class, 'rangkumanCetak'])->name('admin-master.rangkuman.cetak');
-Route::get('/admin-master/tabel-ph', [AdminMasterController::class, 'tabelPH'])->name('admin-master.tabel.PH');
-Route::get('/admin-master/tabel-tds', [AdminMasterController::class, 'tabelTDS'])->name('admin-master.tabel.TDS');
-Route::get('/admin-master/tabel-udara', [AdminMasterController::class, 'tabelUdara'])->name('admin-master.tabel.udara');
-Route::get('/admin-master/tabel-arus', [AdminMasterController::class, 'tabelArus'])->name('admin-master.tabel.arus');
-Route::get('/admin-master/tabel-reservoir', [AdminMasterController::class, 'tabelReservoir'])->name('admin-master.tabel.reservoir');
-Route::get('/admin-master/pengaturan-akun', [AdminMasterController::class, 'pengaturanAkun'])->name('admin-master.akun.pengaturan');
-Route::get('/admin-master/daftar-admin', [AdminMasterController::class, 'daftarAdmin'])->name('admin-master.akun.daftar-admin');
-Route::get('/admin-master/daftar-admin/view/{id}', [AdminMasterController::class, 'viewAdmin'])->name('admin-master.akun.daftar-admin.view');
+Route::get('/check-session', function () {
+    return response()->json([
+        'auth_user' => Auth::user(),
+        'session_id' => session()->getId(),
+    ]);
+})->name('check-session');
 
 
-// Umum
-Route::get('/', [UmumController::class, 'dashboardUmum'])->name('umum.dashboard');
-Route::get('/rangkuman', [UmumController::class, 'rangkuman'])->name('umum.rangkuman');
-Route::get('/rangkuman/cetak', [UmumController::class, 'rangkumanCetak'])->name('umum.rangkuman.cetak');
-Route::get('/tabel-ph', [UmumController::class, 'tabelPH'])->name('umum.tabel.PH');
-Route::get('/tabel-tds', [UmumController::class, 'tabelTDS'])->name('umum.tabel.TDS');
-Route::get('/tabel-udara', [UmumController::class, 'tabelUdara'])->name('umum.tabel.udara');
-Route::get('/tabel-arus', [UmumController::class, 'tabelArus'])->name('umum.tabel.arus');
-Route::get('/tabel-reservoir', [UmumController::class, 'tabelReservoir'])->name('umum.tabel.reservoir');
+// Kelompok Rute untuk Umum
+Route::middleware('role:umum')->prefix('/')->name('umum.')->group(function () {
+    Route::get('/dashboard', [UmumController::class, 'dashboardUmum'])->name('dashboard');
+    Route::get('/rangkuman', [UmumController::class, 'rangkuman'])->name('rangkuman');
+    Route::get('/rangkuman/cetak', [UmumController::class, 'rangkumanCetak'])->name('rangkuman.cetak');
+    Route::get('/tabel-ph', [UmumController::class, 'tabelPH'])->name('tabel.PH');
+    Route::get('/tabel-tds', [UmumController::class, 'tabelTDS'])->name('tabel.TDS');
+    Route::get('/tabel-udara', [UmumController::class, 'tabelUdara'])->name('tabel.udara');
+    Route::get('/tabel-arus', [UmumController::class, 'tabelArus'])->name('tabel.arus');
+    Route::get('/tabel-reservoir', [UmumController::class, 'tabelReservoir'])->name('tabel.reservoir');
+});
+
+Route::fallback(function () {
+    return redirect()->route('umum.dashboard')->with('error', 'Halaman yang Anda cari tidak ditemukan.');
+});

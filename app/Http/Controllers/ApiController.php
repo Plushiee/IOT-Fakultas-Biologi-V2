@@ -21,6 +21,62 @@ use Illuminate\Support\Facades\Validator;
 
 class ApiController extends Controller
 {
+    public function getDashboard()
+    {
+        $ph = optional(TabelPHModel::latest()->first())->ph ?? 0;
+        $tds = optional(TabelTDSModel::latest()->first())->ppm ?? 0;
+        $tempHum = [
+            'temperature' => optional(TabelTempHumModel::latest()->first())->temperature ?? 0,
+            'humidity' => optional(TabelTempHumModel::latest()->first())->humidity ?? 0,
+        ];
+        $arusAir = optional(TabelArusAirModel::latest()->first())->debit ?? 0;
+        $pompa = TabelPompaModel::latest()->first();
+        $ping = optional(TabelPingModel::latest()->first())->ping ?? 0;
+
+        $formattedData = [
+            'ph' => $ph,
+            'ping' => $ping,
+            'tds' => $tds,
+            'tempHum' => $tempHum,
+            'arusAir' => $arusAir,
+            'pompa' => $pompa,
+        ];
+
+        return response()->json($formattedData);
+    }
+
+    public function getUser()
+    {
+        $data = User::all();
+
+        $formattedData = [
+            'total' => $data->count(),
+            'totalNotFiltered' => User::count(),
+            'rows' => $data
+                ->map(function ($item) {
+                    $jam = json_decode($item->jam, true);
+
+                    return [
+                        'id' => $item->id,
+                        'email' => $item->email,
+                        'nama' => $item->nama,
+                        'role' => $item->role,
+                        'hari' => $item->hari,
+                        'jam' => $jam,
+                        'fakultas' => $item->fakultas,
+                        'prodi' => $item->prodi,
+                        'semester' => $item->semester,
+                        'foto' => $item->foto,
+                        'nomor_telepon' => $item->nomor_telepon,
+                    ];
+                })
+                ->toArray(),
+        ];
+
+        return response()->json($formattedData);
+    }
+
+
     public function sendMqtt(Request $request)
     {
         $topic = $request->input('topic');
@@ -369,60 +425,32 @@ class ApiController extends Controller
         return response()->json(['message' => 'Password berhasil direset!', 'new_password' => $password], 200);
     }
 
-    public function getDashboard()
-    {
-        $ph = optional(TabelPHModel::latest()->first())->ph ?? 0;
-        $tds = optional(TabelTDSModel::latest()->first())->ppm ?? 0;
-        $tempHum = [
-            'temperature' => optional(TabelTempHumModel::latest()->first())->temperature ?? 0,
-            'humidity' => optional(TabelTempHumModel::latest()->first())->humidity ?? 0,
-        ];
-        $arusAir = optional(TabelArusAirModel::latest()->first())->debit ?? 0;
-        $pompa = TabelPompaModel::latest()->first();
-        $ping = optional(TabelPingModel::latest()->first())->ping ?? 0;
+    public function postUser(Request $request) {
+        $request->validate([
+            'email' => 'required|email|unique:akun,email',
+            'password' => 'required|string|min:8',
+            'password_confirmation' => 'required|same:password',
+            'role' => 'required|in:admin,admin-master',
+            'nama' => 'required|string|max:255',
+            'hari' => 'required|array',
+            's' => 'required|string|max:50',
+            'e' => 'required|string|max:50',
+            'nomor_telepon' => 'required|string|max:20',
+        ]);
 
-        $formattedData = [
-            'ph' => $ph,
-            'ping' => $ping,
-            'tds' => $tds,
-            'tempHum' => $tempHum,
-            'arusAir' => $arusAir,
-            'pompa' => $pompa,
-        ];
+        $formattedHari = '["' . implode('","', $request->input('hari')) . '"]';
 
-        return response()->json($formattedData);
-    }
+        $user = new User();
+        $user->email = $request->input('email');
+        $user->password = bcrypt($request->input('password'));
+        $user->role = $request->input('role');
+        $user->nama = $request->input('nama');
+        $user->hari = $formattedHari;
+        $user->jam = json_encode(['s' => $request->input('s'), 'e' => $request->input('e')]);
+        $user->nomor_telepon = $request->input('nomor_telepon');
+        $user->save();
 
-    public function getUser()
-    {
-        $data = User::all();
-
-        $formattedData = [
-            'total' => $data->count(),
-            'totalNotFiltered' => User::count(),
-            'rows' => $data
-                ->map(function ($item) {
-                    $jam = json_decode($item->jam, true);
-
-                    return [
-                        'id' => $item->id,
-                        'email' => $item->email,
-                        'nama' => $item->nama,
-                        'role' => $item->role,
-                        'hari' => $item->hari,
-                        'jam' => $jam,
-                        'fakultas' => $item->fakultas,
-                        'prodi' => $item->prodi,
-                        'semester' => $item->semester,
-                        'foto' => $item->foto,
-                        'nomor_telepon' => $item->nomor_telepon,
-                        // 'timestamp' => $item->created_at->format('Y-m-d H:i:s'),
-                    ];
-                })
-                ->toArray(),
-        ];
-
-        return response()->json($formattedData);
+        return response()->json(['message' => 'User berhasil ditambahkan!'], 200);
     }
 
     public function deleteAdmin(Request $request)

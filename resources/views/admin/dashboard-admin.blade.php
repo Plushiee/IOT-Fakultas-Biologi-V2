@@ -595,7 +595,7 @@
                 .catch(error => console.error('Error fetching weather data:', error));
 
             // EventSource (SSE) with Throttling
-            const eventSource = new EventSource("{{ route('api.get.sse') }}");
+            let eventSource = new EventSource("{{ route('api.get.sse') }}");
             let retryTimeout = 1000; // Start with 1 second for reconnection attempts
 
             const throttledUpdate = _.throttle((event) => {

@@ -41,6 +41,24 @@
             color: white;
             border-color: #008000;
         }
+
+        <style>#password-strength .progress {
+            height: 5px;
+        }
+
+        .progress-bar.weak {
+            background-color: red;
+        }
+
+        .progress-bar.medium {
+            background-color: orange;
+        }
+
+        .progress-bar.strong {
+            background-color: green;
+        }
+    </style>
+
     </style>
 @endsection
 @section('content')
@@ -221,8 +239,229 @@
 
     <script>
         $(document).ready(function() {
-            $('#tambah-akun').click(function(e) {
-                e.preventDefault();
+            $(document).on('click', '#tambah-akun', function() {
+                Swal.fire({
+                    title: 'Tambah Akun Admin',
+                    html: `
+                        <style>
+                            .tambah-akun {
+                                font-weight: bold;
+                                text-align: left;
+                                display: block; /* Pastikan label berada di atas input */
+                            }
+
+                            .form-control {
+                                width: 100%; /* Pastikan input mengambil seluruh lebar yang tersedia */
+                            }
+                        </style>
+                        <div class="mb-2">
+                            <label for="nama" class="form-label tambah-akun">Nama *</label>
+                            <input type="text" id="nama" class="form-control" placeholder="Masukkan Nama">
+                        </div>
+                        <div class="mb-2">
+                            <label for="email" class="form-label tambah-akun">Email *</label>
+                            <input type="email" id="email" class="form-control" placeholder="Masukkan Email">
+                        </div>
+                        <div class="mb-2">
+                            <label for="password" class="form-label tambah-akun">Password (Minimal 8 Karakter) *</label>
+                            <input type="password" id="password" class="form-control" placeholder="Masukkan Password">
+                            <div id="password-strength" class="mt-2">
+                                <div class="progress">
+                                    <div id="strength-bar" class="progress-bar" role="progressbar" style="width: 0%;"></div>
+                                </div>
+                                <small id="strength-text" class="text-muted"></small>
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <label for="ulangi_password" class="form-label tambah-akun">Ulangi Password *</label>
+                            <input type="password" id="ulangi_password" class="form-control" placeholder="Ulangi Password">
+                            <small id="password-match" class="text-muted"></small>
+                        </div>
+                        <div class="mb-2">
+                            <label for="telepon" class="form-label tambah-akun">Nomor Telepon *</label>
+                            <div class="input-group">
+                                <span class="input-group-text" id="basic-addon1">+62</span>
+                                <input type="tel" class="form-control" id="telepon" placeholder="Masukan Nomor Telepon" />
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <label for="jabatan" class="form-label tambah-akun">Jabatan *</label>
+                            <select id="jabatan" class="form-control">
+                                <option value="" disabled selected>Pilih Jabatan</option>
+                                <option value="admin">Botanist</option>
+                                <option value="admin-master">Senior Botanist</option>
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label tambah-akun">Hari Jaga *</label>
+                            <div id="hari-container">
+                                ${['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu']
+                                    .map(hari => `<div class="hari-box" data-hari="${hari}">${hari}</div>`)
+                                    .join('')}
+                            </div>
+                        </div>
+                        <div class="">
+                            <label class="form-label tambah-akun">Jam Jaga *</label>
+                            <div class="d-flex align-items-center gap-2">
+                                <input type="time" id="jam-mulai" class="form-control" placeholder="Jam Mulai">
+                                <span>/</span>
+                                <input type="time" id="jam-selesai" class="form-control" placeholder="Jam Selesai">
+                            </div>
+                        </div>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: 'Simpan',
+                    cancelButtonText: 'Batal',
+                    didOpen: () => {
+                        $('#password').on('input', function() {
+                            const password = $(this).val();
+                            const $strengthBar = $('#strength-bar');
+                            const $strengthText = $('#strength-text');
+                            const $passwordStrength = $('#password-strength');
+
+                            if (password === '') {
+                                $strengthBar.css('width', '0%').attr('class',
+                                    'progress-bar');
+                                $strengthText.text('');
+                                $strengthText.hide();
+                                return;
+                            }
+
+                            $strengthText.show();
+
+                            let strength = 0;
+                            if (password.length >= 8) strength++;
+                            if (/[a-z]/.test(password)) strength++;
+                            if (/[A-Z]/.test(password)) strength++;
+                            if (/[0-9]/.test(password)) strength++;
+                            if (/[^a-zA-Z0-9]/.test(password)) strength++;
+
+                            const strengthLevels = ['Lemah', 'Sedang', 'Kuat'];
+                            const colors = ['weak', 'medium', 'strong'];
+                            const widthPercent = [25, 50, 100];
+
+                            const index = Math.min(strength - 1, strengthLevels.length -
+                                1);
+                            $strengthBar.css('width', widthPercent[index] + '%')
+                                .attr('class', `progress-bar ${colors[index]}`);
+                            $strengthText.text(
+                                `Kekuatan Password : ${strengthLevels[index]}`);
+                        });
+
+                        // Validasi ulangi password
+                        $('#ulangi_password').on('input', function() {
+                            const password = $('#password')
+                                .val();
+                            const ulangiPassword = $(this)
+                                .val();
+
+                            if (ulangiPassword === '') {
+                                $('#password-match').text('').removeClass(
+                                    'text-success text-danger');
+                            } else if (password === ulangiPassword) {
+                                $('#password-match').text('Password sama!').addClass(
+                                    'text-success').removeClass('text-danger');
+                            } else {
+                                $('#password-match').text('Password tidak sama!')
+                                    .addClass('text-danger').removeClass(
+                                        'text-success');
+                            }
+                        });
+
+                    },
+                    preConfirm: () => {
+                        let formData = new FormData();
+                        formData.append('email', $('#email').val());
+                        formData.append('nama', $('#nama').val());
+                        formData.append('nomor_telepon', $('#telepon').val());
+                        formData.append('role', $('#jabatan').val());
+
+                        Array.from(document.querySelectorAll('.hari-box.active')).forEach(
+                            btn => {
+                                formData.append('hari[]', btn.dataset.hari);
+                            });
+
+                        formData.append('password', $('#password').val());
+                        formData.append('password_confirmation', $('#ulangi_password').val());
+                        formData.append('s', $('#jam-mulai').val());
+                        formData.append('e', $('#jam-selesai').val());
+
+                        const fieldMessages = {
+                            'email': 'Email',
+                            'nama': 'Nama',
+                            'telepon': 'Nomor Telepon',
+                            'jabatan': 'Jabatan',
+                            'hari[]': 'Hari Jaga',
+                            'jamMulai': 'Jam Mulai',
+                            'jamSelesai': 'Jam Selesai'
+                        };
+
+                        formData.forEach((value, key) => {
+                            if (!value || value.trim() === '') {
+                                const fieldName = fieldMessages[key];
+                                if (fieldName) {
+                                    Swal.showValidationMessage(
+                                        `Bagian "${fieldName}" tidak boleh kosong!`);
+                                }
+                                return false;
+                            }
+                        });
+
+                        if ($('#password').val() !== $('#ulangi_password').val()) {
+                            Swal.showValidationMessage('Password tidak sama!');
+                            return false;
+                        }
+
+                        if ($('#password').val().length < 8) {
+                            Swal.showValidationMessage('Password minimal 8 karakter!');
+                            return false;
+                        }
+
+                        const jamMulai = $('#jam-mulai').val();
+                        const jamSelesai = $('#jam-selesai').val();
+
+                        if (jamMulai && jamSelesai && jamMulai >= jamSelesai) {
+                            Swal.showValidationMessage(
+                                'Jam mulai harus lebih kecil dari jam selesai!');
+                            return false;
+                        }
+
+                        return formData;
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        let formData = result.value;
+
+                        $.ajax({
+                            url: `{{ route('api.post.admin') }}`,
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                            },
+                            data: formData,
+                            contentType: false,
+                            processData: false,
+                            success: function(response) {
+                                alert.fire({
+                                    icon: 'success',
+                                    title: response.message
+                                });
+                                $('#table').bootstrapTable('refresh');
+                            },
+                            error: function(xhr) {
+                                alert.fire({
+                                    icon: 'error',
+                                    title: xhr.responseJSON?.message ||
+                                        'Terdapat suatu kesalahan. Mohon input ulang.',
+                                });
+                            }
+                        });
+                    }
+                });
+
+                $(document).on('click', '.hari-box', function() {
+                    $(this).toggleClass('active btn-primary btn-outline-primary');
+                });
             });
 
             $(document).on('click', '.view', function(e) {
@@ -396,7 +635,7 @@
                 `).join('');
 
                 Swal.fire({
-                    title: 'Edit Hari',
+                    title: 'Edit Hari Jaga',
                     html: `
                         <div id="hari-container">
                             ${hariBoxes}

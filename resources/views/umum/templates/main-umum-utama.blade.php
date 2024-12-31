@@ -127,6 +127,15 @@
     <script src="{{ asset('main/js/notification.js') }}"></script>
     @yield('jQuery-extras')
 
+    @if (session('error'))
+        <script>
+            alert.fire({
+                icon: 'error',
+                title: `{{ session('error') }}`
+            });
+        </script>
+    @endif
+
     <!-- Script Untuk Dashboard -->
     <script>
         $(document).ready(function() {
@@ -174,69 +183,81 @@
             // Login
             $('#btn-login').click(function(e) {
                 e.preventDefault();
+
+                let targetUrl = window.location.href;
+                if (targetUrl === "{{ route('umum.dashboard') }}") {
+                    // Tutup koneksi EventSource
+                    window.eventSource.close();
+                    console.log("SSE connection closed.");
+                }
+
                 Swal.fire({
                     title: 'Login',
                     html: `
-                        <form id="login-form">
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Alamat Email</label>
-                                <input type="email" class="form-control" id="email" aria-describedby="emailHelp">
-                                <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="password" class="form-label">Password</label>
-                                <input type="password" class="form-control" id="password">
-                            </div>
-                        </form>
-                    `,
+                    <form id="login-form">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Alamat Email</label>
+                            <input type="email" class="form-control" id="email" aria-describedby="emailHelp">
+                            <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password">
+                        </div>
+                    </form>
+                `,
                     showCancelButton: true,
                     confirmButtonText: 'Login',
                     preConfirm: () => {
-                        const username = document.getElementById('username').value;
-                        const password = document.getElementById('password').value;
+                        let formData = new FormData();
+                        formData.append('email', document.getElementById('email').value);
+                        formData.append('password', document.getElementById('password').value);
+                        formData.append('url', window.location.pathname);
 
-                        if (!username || !password) {
-                            Swal.showValidationMessage(
-                                'Please enter both username and password');
-                            return false;
-                        }
+                        formData.forEach((value, key) => {
+                            if (!value || value.trim() === '') {
+                                const fieldName = fieldMessages[key];
+                                if (fieldName) {
+                                    Swal.showValidationMessage(
+                                        `Bagian "${fieldName}" tidak boleh kosong!`);
+                                }
+                                return false;
+                            }
+                        });
 
-                        // Return data for further processing
-                        return {
-                            username,
-                            password
-                        };
+                        return formData;
                     }
+
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        console.log('Login data:', result.value);
+                        let formData = result.value;
+                        $.ajax({
+                            type: "POST",
+                            url: "{{ route('api.login') }}",
+                            headers: {
+                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                            },
+                            data: formData,
+                            contentType: false,
+                            processData: false,
+                            success: function(response) {
+                                window.location.href = response.redirect || '/';
 
-                        // Example: AJAX request (adjust URL and data as needed)
-                        fetch('/login', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': document.querySelector(
-                                            'meta[name="csrf-token"]')
-                                        .content
-                                },
-                                body: JSON.stringify(result.value)
-                            })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    Swal.fire('Success', 'Login successful!', 'success');
-                                } else {
-                                    Swal.fire('Error', data.message, 'error');
-                                }
-                            })
-                            .catch(error => {
-                                Swal.fire('Error', 'An error occurred!', 'error');
-                            });
+                            },
+                            error: function(xhr, textStatus) {
+                                alert.fire({
+                                    icon: 'error',
+                                    title: xhr
+                                        .responseJSON?.error || xhr.responseJSON
+                                        ?.message ||
+                                        'Terdapat suatu kesalahan. Mohon input ulang.',
+                                });
+                            }
+
+                        });
                     }
                 });
             });
-
         });
     </script>
     <!-- /Script Untuk Dashboard -->

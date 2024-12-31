@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ApiController;
+use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
 // API MQTT Start
@@ -19,6 +20,8 @@ Route::post('/get/admin/photo', [ApiController::class, 'getPhoto'])->name('api.g
 
 // API POST Start
 Route::post('/post/pompa', [ApiController::class, 'postPompa'])->name('api.post.pompa');
+
+Route::post('/post/admin', [ApiController::class, 'postUser'])->name('api.post.admin');
 // API POST End
 
 // API UPDATE Start (Admin Master)
@@ -40,3 +43,14 @@ Route::get('/get/dashboard', [ApiController::class, 'getDashboard'])->name('api.
 // API Server-Sent Events (SSE) Start
 Route::get('/get/sse', [ApiController::class, 'getSSE'])->name('api.get.sse');
 // API Server-Sent Events (SSE) End
+
+
+// Rute untuk login logout
+Route::middleware('guest')->group(function () {
+    Route::post('/auth/login', [AuthController::class, 'authLogin'])->name('api.login');
+});
+
+// Rute untuk logout
+Route::middleware('auth')->group(function () {
+    Route::post('/auth/logout', [AuthController::class, 'logout'])->name('api.logout');
+});
