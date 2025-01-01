@@ -19,25 +19,27 @@ class RoleMiddleware
      */
     public function handle(Request $request, Closure $next, ...$roles)
     {
-        // Pastikan pengguna sudah terautentikasi
         if (!Auth::check()) {
             return redirect()->route('umum.dashboard')->with('error', 'Silakan login terlebih dahulu.');
         }
 
-        // Periksa apakah role pengguna sesuai dengan salah satu role yang diterima di parameter middleware
-        if (!in_array(Auth::user()->role, $roles)) {
-            // Redirect ke halaman dashboard berdasarkan role pengguna
-            switch (Auth::user()->role) {
-                case 'admin':
-                    return redirect()->route('admin.dashboard')->with('error', 'Anda tidak memiliki akses ke halaman ini.');
-                case 'admin-master':
-                    return redirect()->route('admin-master.dashboard')->with('error', 'Anda tidak memiliki akses ke halaman ini.');
-                default:
-                    return redirect()->route('umum.dashboard')->with('error', 'Anda tidak memiliki akses ke halaman ini.');
+        $userRole = Auth::user()->role;
+
+        if (!in_array($userRole, $roles)) {
+            // Jika pengguna sudah diarahkan ke dashboard role-nya, hindari loop
+            $redirectRoute = match ($userRole) {
+                'admin' => 'admin.dashboard',
+                'admin-master' => 'admin-master.dashboard',
+                default => 'umum.dashboard',
+            };
+
+            if ($request->route()->getName() === $redirectRoute) {
+                return $next($request);
             }
+
+            return redirect()->route($redirectRoute)->with('error', 'Anda tidak memiliki akses ke halaman ini.');
         }
 
-        // Jika role sesuai, lanjutkan permintaan
         return $next($request);
     }
 }

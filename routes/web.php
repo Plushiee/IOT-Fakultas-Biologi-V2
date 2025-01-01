@@ -43,7 +43,7 @@ Route::get('/check-session', function () {
 
 
 // Kelompok Rute untuk Umum
-Route::middleware('role:umum')->prefix('/')->name('umum.')->group(function () {
+Route::middleware('guest')->prefix('/')->name('umum.')->group(function () {
     Route::get('/dashboard', [UmumController::class, 'dashboardUmum'])->name('dashboard');
     Route::get('/rangkuman', [UmumController::class, 'rangkuman'])->name('rangkuman');
     Route::get('/rangkuman/cetak', [UmumController::class, 'rangkumanCetak'])->name('rangkuman.cetak');
