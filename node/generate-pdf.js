@@ -6,6 +6,7 @@ import puppeteer from 'puppeteer';
     const outputFile = args[1]; // Jalur file PDF
 
     const browser = await puppeteer.launch({
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--unlimited-storage', '--full-memory-crash-report'],
         cacheDirectory: 'C:\\Users\\Administrator\\.puppeteer',
         headless: true,
     });
