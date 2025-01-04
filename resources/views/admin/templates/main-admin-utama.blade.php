@@ -139,6 +139,23 @@
                 title: "{{ session('success') }}",
             });
         </script>
+
+        @php
+            session()->forget('success');
+        @endphp
+    @endif
+
+    @if (session('error'))
+        <script>
+            alert.fire({
+                icon: 'error',
+                title: "{{ session('error') }}",
+            });
+        </script>
+
+        @php
+            session()->forget('error');
+        @endphp
     @endif
 
     <!-- Script Untuk Master -->
@@ -148,16 +165,49 @@
             $('#tabelDataToggle').click(function() {
                 const caretTabel = $('#tabelCaret');
                 const listTabbel = $('#tabelDataList');
-
-                listTabbel.slideToggle(400); // Slide toggle animation
+                listTabbel.slideToggle(400);
                 caretTabel.toggleClass('bi-caret-down-fill bi-caret-up-fill');
             });
 
+            // Dropdown Pengaturan Akun
+            $('#akunToggle').click(function() {
+                const caretAkun = $('#akunCaret');
+                const listAkun = $('#akunList');
+                listAkun.slideToggle(400);
+                caretAkun.toggleClass('bi-caret-down-fill bi-caret-up-fill');
+            });
+
+            // Logout Button
             const $btnLogout = $('#btn-logout');
             const $toggleBtn = $('#toggle-btn');
             const $floatingContainer = $('.floating-container');
             let isHidden = true;
 
+            $($btnLogout).click(function(e) {
+                e.preventDefault();
+
+                Swal.fire({
+                    title: 'Logout',
+                    icon: 'question',
+                    html: `
+                        <p class="mt-2 mx-2 mb-1 pb-0">Apakah Anda akan mengakhiri sesi ini?</p>
+                        <form method="POST" action="{{ route('logout') }}"" id="logout-form">
+                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                        </form>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Logout',
+                    cancelButtonText: 'Batal',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Tutup koneksi EventSource jika ada
+                        if (window.eventSource) {
+                            window.eventSource.close();
+                        }
+                        document.getElementById('logout-form').submit();
+                    }
+                });
+            });
             // Mulai dalam keadaan tersembunyi
             $btnLogout.addClass('hidden');
 

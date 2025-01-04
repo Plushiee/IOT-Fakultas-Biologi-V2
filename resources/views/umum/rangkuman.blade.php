@@ -4,37 +4,6 @@
     <link rel="stylesheet" href="{{ asset('main/css/dashboard.css') }}">
     <!-- CSS untuk Bootstrap Datepicker -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css">
-    <style>
-        /* Floating Button Styling */
-        .floating-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: #077f0d;
-            color: #fff;
-            border: none;
-            border-radius: 15%;
-            width: 60px;
-            height: 60px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 24px;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: background-color 0.3s ease;
-        }
-
-        .floating-btn:hover {
-            background-color: #0056b3;
-        }
-
-        #dateFilters {
-            border: 1px solid #dee2e6;
-            border-radius: 0.375rem;
-            background-color: #f8f9fa;
-        }
-    </style>
 @endsection
 @section('content')
     <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
@@ -111,11 +80,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Floating Button Login -->
-    <button class="floating-btn" id="btn-login">
-        🔑
-    </button>
 @endsection
 
 @section('jQuery-extras')

@@ -126,11 +126,6 @@
                             align: 'center'
                         },
                         {
-                            field: 'nama',
-                            title: 'Nama',
-                            align: 'center'
-                        },
-                        {
                             field: 'nomor_telepon',
                             title: 'Nomor Telepon',
                             align: 'center',
@@ -139,11 +134,27 @@
                             }
                         },
                         {
+                            field: 'nama',
+                            title: 'Nama',
+                            align: 'center',
+                            formatter: function(value, row, index) {
+                                return `${value}
+                                    <br>
+                                    <button href="" class="btn btn-warning edit-nama mt-1" data-id="${row.id}" data-nama="${row.nama}">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>`;
+                            }
+                        },
+                        {
                             field: 'role',
                             title: 'Jabatan',
                             align: 'center',
                             formatter: function(value, row, index) {
-                                return value === 'admin' ? 'Botanist' : 'Senior Botanist';
+                                return `${value === 'admin' ? 'Botanist' : 'Senior Botanist'}
+                                    <br>
+                                    <button href="" class="btn btn-warning edit-jabatan mt-1" data-id="${row.id}" data-role="${row.role}">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>`;
                             }
                         },
                         {
@@ -156,9 +167,9 @@
                                 return `
                                     ${hariArray.join(', ')}
                                     <br>
-                                    <a href="#" class="btn btn-warning edit-waktu mt-1" data-id="${row.id}" data-hari='${JSON.stringify(hariArray)}'>
+                                    <button href="" class="btn btn-warning edit-waktu mt-1" data-id="${row.id}" data-hari='${JSON.stringify(hariArray)}'>
                                         <i class="fa-solid fa-pen-to-square"></i>
-                                    </a>`;
+                                    </button>`;
                             }
                         },
                         {
@@ -169,9 +180,9 @@
                                 return `
                                     ${value.s} - ${value.e}
                                     <br>
-                                    <a href="#" class="btn btn-warning edit-jam mt-1" data-id="${row.id}" data-s="${value.s}" data-e="${value.e}">
+                                    <button class="btn btn-warning edit-jam mt-1" data-id="${row.id}" data-s="${value.s}" data-e="${value.e}">
                                         <i class="fa-solid fa-pen-to-square"></i>
-                                    </a>
+                                    </button>
                                 `;
                             }
 
@@ -247,11 +258,11 @@
                             .tambah-akun {
                                 font-weight: bold;
                                 text-align: left;
-                                display: block; /* Pastikan label berada di atas input */
+                                display: block;
                             }
 
                             .form-control {
-                                width: 100%; /* Pastikan input mengambil seluruh lebar yang tersedia */
+                                width: 100%;
                             }
                         </style>
                         <div class="mb-2">
@@ -616,6 +627,148 @@
                                         'Terdapat suatu kesalahan. Mohon input ulang.',
                                 });
                             },
+                        });
+                    }
+                });
+            });
+
+            $(document).on('click', '.edit-nama', function(e) {
+                e.preventDefault();
+
+                const id = $(this).data('id');
+                const nama = $(this).data('nama');
+
+                Swal.fire({
+                    title: 'Edit Nama Admin',
+                    html: `
+                        <label for="nama" class="form-label tambah-akun">Nama *</label>
+                        <input type="text" id="nama" class="form-control" value="${nama}">
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: 'Simpan',
+                    preConfirm: () => {
+                        let formData = new FormData();
+                        formData.append('nama', $('#nama').val());
+                        formData.append('id', id);
+
+                        const fieldMessages = {
+                            'nama': 'Nama',
+                        };
+
+                        formData.forEach((value, key) => {
+                            if (!value || value.trim() === '') {
+                                const fieldName = fieldMessages[key];
+                                if (fieldName) {
+                                    Swal.showValidationMessage(
+                                        `Bagian "${fieldName}" tidak boleh kosong!`);
+                                }
+                                return false;
+                            }
+                        });
+
+                        return formData;
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        let formData = result.value;
+
+                        $.ajax({
+                            url: `{{ route('api.admin-utama.update.nama') }}`,
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                            },
+                            data: formData,
+                            contentType: false,
+                            processData: false,
+                            success: function(response) {
+                                alert.fire({
+                                    icon: 'success',
+                                    title: response.message
+                                });
+                                $table.bootstrapTable('refresh');
+                            },
+                            error: function(xhr) {
+                                alert.fire({
+                                    icon: 'error',
+                                    title: xhr.responseJSON?.message ||
+                                        'Terdapat suatu kesalahan. Mohon input ulang.',
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+
+            $(document).on('click', '.edit-jabatan', function(e) {
+                e.preventDefault();
+
+                const id = $(this).data('id');
+                const role = $(this).data('role');
+
+                Swal.fire({
+                    title: 'Edit Jabatan Admin',
+                    html: `
+                        <label for="jabatan" class="form-label tambah-akun">Jabatan *</label>
+                            <select id="jabatan" class="form-control">
+                                <option value="" disabled selected>Pilih Jabatan</option>
+                                <option value="admin">Botanist</option>
+                                <option value="admin-master">Senior Botanist</option>
+                        </select>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: 'Simpan',
+                    didOpen: () => {
+                        $('#jabatan').val(role);
+                    },
+                    preConfirm: () => {
+                        let formData = new FormData();
+                        formData.append('role', $('#jabatan').val());
+                        formData.append('id', id);
+
+                        const fieldMessages = {
+                            'jabatan': 'Jabatan',
+                        };
+
+                        formData.forEach((value, key) => {
+                            if (!value || value.trim() === '') {
+                                const fieldName = fieldMessages[key];
+                                if (fieldName) {
+                                    Swal.showValidationMessage(
+                                        `Bagian "${fieldName}" tidak boleh kosong!`);
+                                }
+                                return false;
+                            }
+                        });
+
+                        return formData;
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        let formData = result.value;
+
+                        $.ajax({
+                            url: `{{ route('api.admin-utama.update.role') }}`,
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                            },
+                            data: formData,
+                            contentType: false,
+                            processData: false,
+                            success: function(response) {
+                                alert.fire({
+                                    icon: 'success',
+                                    title: response.message
+                                });
+                            },
+                            error: function(xhr) {
+                                alert.fire({
+                                    icon: 'error',
+                                    title: xhr.responseJSON?.message ||
+                                        'Terdapat suatu kesalahan. Mohon input ulang.',
+                                });
+                            }
                         });
                     }
                 });

@@ -1,4 +1,4 @@
-@extends('admin-master.templates.main-admin-utama')
+@extends('admin.templates.main-admin-utama')
 @section('title', 'Rumah Hijau Fakultas Biologi | Akun')
 @section('css-extras')
     <link rel="stylesheet" href="{{ asset('main/css/dashboard.css') }}">
@@ -9,10 +9,8 @@
 @section('content')
     <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ route('admin-master.akun.pengaturan') }}">Akun</a></li>
-            <li class="breadcrumb-item" aria-current="page"><a href="{{ route('admin-master.akun.daftar-admin') }}">Daftar
-                    Admin</a></li>
-            <li class="breadcrumb-item active" aria-current="page">{{ $data->nama ?? '-' }}</li>
+            <li class="breadcrumb-item"><a href="{{ route('admin.akun-admin.pengaturan') }}">Pengaturan</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Akun</li>
         </ol>
     </nav>
 
@@ -27,23 +25,23 @@
                         </div>
 
                         <div class="col-12 col-sm-9 col-xxl-8">
-                            <h3 class="mb-1 text-sm-start text-center">{{ $data->nama }}</h3>
+                            <h3 class="mb-1 text-sm-start text-center">{{ Auth::user()->nama }}</h3>
                             <p class="mb-2 pb-1 text-sm-start text-center">
-                                {{ $data->role === 'admin' ? 'Botanist' : 'Senior Botanist' }}
+                                {{ Auth::user()->role === 'admin' ? 'Botanist' : 'Senior Botanist' }}
                             </p>
                             <div class="row d-flex justify-content-start rounded-3 p-2 mb-2 bg-body-tertiary">
                                 <div class="col-8">
                                     <p class="small text-muted mb-1">
                                         Hari Jaga
                                     </p>
-                                    <p class="mb-0">{{ implode(', ', json_decode($data->hari)) }}</p>
+                                    <p class="mb-0">{{ implode(', ', json_decode(Auth::user()->hari)) }}</p>
                                 </div>
                                 <div class="col-4">
                                     <p class="small text-muted mb-1">
                                         Waktu
                                     </p>
                                     <p class="mb-0">
-                                        {{ $data->jam !== null ? $data->jam['s'] . ' - ' . $data->jam['e'] : '-' }}
+                                        {{ Auth::user()->jam !== null ? json_decode(Auth::user()->jam, true)['s'] . ' - ' . json_decode(Auth::user()->jam, true)['e'] : '-' }}
                                     </p>
                                 </div>
                             </div>
@@ -74,23 +72,24 @@
                     <hr class="mt-2 mb-0 border border-light-subtle border-1 opacity-100">
                     <p class="small mt-2 mb-0 text-muted">Email<a href="#" class="float-end" id="email">edit</a>
                     </p>
-                    <h5 class="mb-3">{{ $data->email ?? '-' }}</h5>
+                    <h5 class="mb-3">{{ Auth::user()->email ?? '-' }}</h5>
                     <p class="small mt-2 mb-0 text-muted">Fakultas<a href="#" class="float-end"
                             id="fakultas">edit</a></p>
-                    <h5 class="mb-3">{{ $data->fakultas ?? '-' }}</h5>
+                    <h5 class="mb-3">{{ Auth::user()->fakultas ?? '-' }}</h5>
                     <p class="small mt-2 mb-0 text-muted">Prodi<a href="#" class="float-end" id="prodi">edit</a>
                     </p>
-                    <h5 class="mb-3">{{ $data->prodi ?? '-' }}</h5>
+                    <h5 class="mb-3">{{ Auth::user()->prodi ?? '-' }}</h5>
                     <p class="small mt-2 mb-0 text-muted">Semester<a href="#" class="float-end"
                             id="semester">edit</a></p>
-                    <h5 class="mb-3">{{ $data->semester ?? '-' }}</h5>
+                    <h5 class="mb-3">{{ Auth::user()->semester ?? '-' }}</h5>
                     <p class="small mt-2 mb-0 text-muted">Nomor Telepon<a href="#" class="float-end"
                             id="nomor_telepon">edit</a></p>
-                    <h5 class="mb-0">{{ $data->nomor_telepon == null ? '-' : '+62' . $data->nomor_telepon }}</h5>
-                    {!! $data->nomor_telepon == null
+                    <h5 class="mb-0">
+                        {{ Auth::user()->nomor_telepon == null ? '-' : '+62' . Auth::user()->nomor_telepon }}</h5>
+                    {!! Auth::user()->nomor_telepon == null
                         ? ''
                         : ' <p class="whatsapp small mt-0 mb-0 text-muted"><a id="whatsapp" href="https://wa.me/62' .
-                            $data->nomor_telepon .
+                            Auth::user()->nomor_telepon .
                             '" target="_blank">Hubungi Melalui Whatsapp</a></p>' !!}
                 </div>
             </div>
@@ -133,7 +132,7 @@
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 },
                 data: {
-                    id: {{ $data->id }},
+                    id: {{ Auth::user()->id }},
                 },
                 success: function(response) {
                     $('#photo').attr('src', response.image);
@@ -172,7 +171,7 @@
                 e.preventDefault();
 
                 const file = filePondInstance.getFiles()[0];
-                const userId = {{ $data->id }};
+                const userId = {{ Auth::user()->id }};
 
                 if (!file) {
                     alert.fire({
@@ -242,7 +241,7 @@
                     type: 'POST',
                     data: {
                         _token: $('meta[name="csrf-token"]').attr('content'),
-                        id: {{ $data->id }},
+                        id: {{ Auth::user()->id }},
                         field: fieldId,
                         value: newValue,
                     },

@@ -72,6 +72,22 @@
                     </li>
                 </ul>
             </li>
+            <li>
+                <h5 class="fs-5 text-light fw-bold mt-2 d-flex align-items-center justify-content-between"
+                    id="akunToggle" style="cursor: pointer;">
+                    Pengaturan
+                    <i class="bi bi-caret-down-fill me-4" id="akunCaret"></i>
+                </h5>
+                <ul class="list-unstyled ms-4 {{ request()->routeIs('admin.akun-admin.*') ? '' : 'collapse' }}"
+                    id="akunList">
+                    <li>
+                        <a href="{{ route('admin.akun-admin.pengaturan') }}"
+                            class="{{ request()->routeIs('admin.akun-admin.pengaturan') ? 'active' : '' }}">
+                            Akun <i class="bi bi-gear-fill float-end me-4"></i>
+                        </a>
+                    </li>
+                </ul>
+            </li>
             <hr class="mt-2 mb-0 border border-light border-1 opacity-100">
         </ul>
     </div>

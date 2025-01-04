@@ -32,8 +32,6 @@ class User extends Authenticatable
         'nomor_telepon',
     ];
 
-    protected $primaryKey = 'email';
-
     /**
      * The attributes that should be hidden for serialization.
      *

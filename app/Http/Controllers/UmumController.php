@@ -191,7 +191,7 @@ class UmumController extends Controller
 
     public function tabelArus()
     {
-        return view('umum.tabelArus');
+        return view('umum.tabelArusAir');
     }
 
     public function tabelReservoir()

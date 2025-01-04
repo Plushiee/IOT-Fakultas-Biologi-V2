@@ -203,17 +203,25 @@ class AdminMasterController extends Controller
         return view('admin-master.akun');
     }
 
-    public function daftarAdmin() {
+    public function daftarAdmin()
+    {
         return view('admin-master.daftar-admin');
     }
 
-    public function viewAdmin(Request $request) {
+    public function viewAdmin(Request $request)
+    {
         $id = $request->route('id');
-        $data = User::find($id);
+        $data = User::where('id', $id)->first();
 
-        $jam = json_decode($data->jam, true);
+        if (!$data) {
+            // Jika user dengan ID ini tidak ditemukan, kembalikan 404
+            abort(404, 'User not found');
+        }
 
-        $data->jam = $jam;
+        if ($data->jam) {
+            $jam = json_decode($data->jam, true);
+            $data->jam = $jam;
+        }
 
         return view('admin-master.view-admin', compact('data'));
     }

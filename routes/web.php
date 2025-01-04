@@ -8,7 +8,7 @@ use App\Http\Controllers\UmumController;
 use Illuminate\Support\Facades\Auth;
 
 // Kelompok Rute untuk Admin
-Route::middleware(['auth','role:admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth','role:admin'])->prefix('/admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboardAdmin'])->name('dashboard');
     Route::get('/rangkuman', [AdminController::class, 'rangkuman'])->name('rangkuman');
     Route::get('/rangkuman/cetak', [AdminController::class, 'rangkumanCetak'])->name('rangkuman.cetak');
@@ -17,10 +17,11 @@ Route::middleware(['auth','role:admin'])->prefix('admin')->name('admin.')->group
     Route::get('/tabel-udara', [AdminController::class, 'tabelUdara'])->name('tabel.udara');
     Route::get('/tabel-arus', [AdminController::class, 'tabelArus'])->name('tabel.arus');
     Route::get('/tabel-reservoir', [AdminController::class, 'tabelReservoir'])->name('tabel.reservoir');
+    Route::get('/pengaturan-akun', [AdminController::class, 'pengaturanAkun'])->name('akun-admin.pengaturan');
 });
 
 // Kelompok Rute untuk Admin Master
-Route::middleware(['auth', 'role:admin-master'])->prefix('admin-master')->name('admin-master.')->group(function () {
+Route::middleware(['auth', 'role:admin-master'])->prefix('/admin-master')->name('admin-master.')->group(function () {
     Route::get('/dashboard', [AdminMasterController::class, 'dashboardAdmin'])->name('dashboard');
     Route::get('/rangkuman', [AdminMasterController::class, 'rangkuman'])->name('rangkuman');
     Route::get('/rangkuman/cetak', [AdminMasterController::class, 'rangkumanCetak'])->name('rangkuman.cetak');
@@ -41,6 +42,15 @@ Route::get('/check-session', function () {
     ]);
 })->name('check-session');
 
+// Rute untuk logout
+Route::middleware('auth')->prefix('/auth')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+});
+
+// Rute untuk login
+Route::middleware('guest')->prefix('/auth')->group(function () {
+    Route::post('/login', [AuthController::class, 'authLogin'])->name('login');
+});
 
 // Kelompok Rute untuk Umum
 Route::middleware('guest')->prefix('/')->name('umum.')->group(function () {

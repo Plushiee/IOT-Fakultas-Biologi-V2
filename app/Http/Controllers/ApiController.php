@@ -76,7 +76,6 @@ class ApiController extends Controller
         return response()->json($formattedData);
     }
 
-
     public function sendMqtt(Request $request)
     {
         $topic = $request->input('topic');
@@ -291,6 +290,16 @@ class ApiController extends Controller
             'nomor_telepon' => 'sometimes|string|max:20',
         ]);
 
+        $isMasterAdmin = Auth::user()->role === 'admin-master';
+
+        if (!$isMasterAdmin) {
+            $validator->after(function ($validator) use ($request) {
+                if ($request->id != Auth::user()->id) {
+                    $validator->errors()->add('id', 'ID tidak sesuai dengan pengguna yang sedang login.');
+                }
+            });
+        }
+
         if ($validator->fails()) {
             return response()->json([
                 'error' => true,
@@ -330,10 +339,20 @@ class ApiController extends Controller
 
     public function updateAdminPhoto(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'id' => 'required|exists:akun,id',
             'photo' => 'required|image|max:3072', // Maksimal 3MB
         ]);
+
+        $isMasterAdmin = Auth::user()->role === 'admin-master';
+
+        if (!$isMasterAdmin) {
+            $validator->after(function ($validator) use ($request) {
+                if ($request->id != Auth::user()->id) {
+                    $validator->errors()->add('id', 'ID tidak sesuai dengan pengguna yang sedang login.');
+                }
+            });
+        }
 
         $userId = $request->input('id');
         $image = $request->file('photo');
@@ -391,6 +410,42 @@ class ApiController extends Controller
         return response()->json(['message' => 'Hari kerja berhasil diupdate!'], 200);
     }
 
+    public function updateRole(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|exists:akun,id',
+            'role' => 'required|in:admin,admin-master',
+        ]);
+
+        $user = User::where('id', $request->id)->first();
+        if ($user) {
+            $user->role = $request->role;
+            $user->save();
+        } else {
+            return response()->json(['message' => 'User tidak ditemukan!'], 404);
+        }
+
+        return response()->json(['message' => 'Role berhasil diupdate!'], 200);
+    }
+
+    public function updateAdminNama(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|exists:akun,id',
+            'nama' => 'required|string|max:255',
+        ]);
+
+        $user = User::where('id', $request->id)->first();
+        if ($user) {
+            $user->nama = $request->nama;
+            $user->save();
+        } else {
+            return response()->json(['message' => 'User tidak ditemukan!'], 404);
+        }
+
+        return response()->json(['message' => 'Nama berhasil diupdate!'], 200);
+    }
+
     public function getPhoto(Request $request)
     {
         $userId = $request->id;
@@ -425,7 +480,8 @@ class ApiController extends Controller
         return response()->json(['message' => 'Password berhasil direset!', 'new_password' => $password], 200);
     }
 
-    public function postUser(Request $request) {
+    public function postUser(Request $request)
+    {
         $request->validate([
             'email' => 'required|email|unique:akun,email',
             'password' => 'required|string|min:8',
@@ -459,14 +515,14 @@ class ApiController extends Controller
             'id' => 'required|exists:akun,id',
         ]);
 
-        // if ($request->id == Auth::user()->id) {
-        //     return response()->json(['message' => 'User yang digunakan tidak dapat dihapus!'], 403);
-        // }
+        if ($request->id == Auth::user()->id) {
+            return response()->json(['message' => 'User yang digunakan tidak dapat dihapus!'], 403);
+        }
 
         $user = User::where('id', $request->id)->first();
 
         if ($user) {
-            // $user->delete();
+            $user->delete();
         } else {
             return response()->json(['message' => 'User tidak ditemukan!'], 404);
         }

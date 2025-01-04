@@ -196,4 +196,9 @@ class AdminController extends Controller
     {
         return view('admin.tabelReservoir');
     }
+
+    public function pengaturanAkun()
+    {
+        return view('admin.pengaturanAkun');
+    }
 }

@@ -44,22 +44,22 @@
                     Tabel Data
                     <i class="bi bi-caret-down-fill me-4" id="tabelCaret"></i>
                 </h5>
-                <ul class="list-unstyled ms-4 collapse" id="tabelDataList">
+                <ul class="list-unstyled ms-4 {{ request()->routeIs('umum.tabel.*') ? '' : 'collapse' }}" id="tabelDataList">
                     <li>
                         <a href="{{ route('umum.tabel.TDS') }}"
-                            class="{{ request()->routeIs('umum.tabelTDS') ? 'active' : '' }}">
+                            class="{{ request()->routeIs('umum.tabel.TDS') ? 'active' : '' }}">
                             Tabel TDS <i class="bi bi-table float-end me-4"></i>
                         </a>
                     </li>
                     <li>
                         <a href="{{ route('umum.tabel.udara') }}"
-                            class="{{ request()->routeIs('umum.tabelUdara') ? 'active' : '' }}">
+                            class="{{ request()->routeIs('umum.tabel.udara') ? 'active' : '' }}">
                             Tabel Udara <i class="bi bi-table float-end me-4"></i>
                         </a>
                     </li>
                     <li>
                         <a href="{{ route('umum.tabel.arus') }}"
-                            class="{{ request()->routeIs('umum.tabelArus') ? 'active' : '' }}">
+                            class="{{ request()->routeIs('umum.tabel.arus') ? 'active' : '' }}">
                             Tabel Arus Air <i class="bi bi-table float-end me-4"></i>
                         </a>
                     </li>

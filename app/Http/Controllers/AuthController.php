@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redirect;
 
 class AuthController extends Controller
 {
@@ -26,44 +26,28 @@ class AuthController extends Controller
         }
 
         if (Auth::attempt($credentials)) {
+            session()->put('success', 'Login berhasil!');
             $request->session()->regenerate();
-            Log::info('User logged in: ', ['user_id' => Auth::id(), 'session_id' => session()->getId()]);
 
             if (Auth::user()->role === 'admin') {
-                session()->flash('success', 'Login berhasil!');
-                return response()->json([
-                    'message' => 'Login berhasil.',
-                    'redirect' => '/admin' . $request->input('url'), // Ubah sesuai role pengguna
-                ], 200);
+                return redirect('/admin' . $request->input('url'));
             } elseif (Auth::user()->role === 'admin-master') {
-                session()->flash('success', 'Login berhasil!');
-                return response()->json([
-                    'message' => 'Login berhasil.',
-                    'redirect' => '/admin-master' . $request->input('url'), // Ubah sesuai role pengguna
-                ], 200);
+                return redirect('/admin-master' . $request->input('url'));
             }
         }
 
-        return response()->json([
-            'error' => 'Kesalahan pada backend.',
-        ], 401);
+        session()->put('error', 'Email atau password salah.');
+
+        return Redirect::back();
     }
 
     // Logout
     public function logout(Request $request)
     {
-        if (Auth::logout()) {
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
-            session()->flash('success', 'Login berhasil!');
-            return response()->json([
-                'message' => 'Logout berhasil.',
-                'redirect' => '/dashboard', // Ubah sesuai role pengguna
-            ], 200);
-        }
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
-        return response()->json([
-            'error' => 'Kesalahan pada backend.',
-        ], 401);
+        return redirect()->route('umum.dashboard')->with('success', 'Logout berhasil!');
     }
 }

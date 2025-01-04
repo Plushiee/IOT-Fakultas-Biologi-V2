@@ -127,13 +127,30 @@
     <script src="{{ asset('main/js/notification.js') }}"></script>
     @yield('jQuery-extras')
 
+    @if (session('success'))
+        <script>
+            alert.fire({
+                icon: 'success',
+                title: "{{ session('success') }}",
+            });
+        </script>
+
+        @php
+            session()->forget('success');
+        @endphp
+    @endif
+
     @if (session('error'))
         <script>
             alert.fire({
                 icon: 'error',
-                title: `{{ session('error') }}`
+                title: "{{ session('error') }}",
             });
         </script>
+
+        @php
+            session()->forget('error');
+        @endphp
     @endif
 
     <!-- Script Untuk Dashboard -->
@@ -143,21 +160,11 @@
             $('#tabelDataToggle').click(function() {
                 const caretTabel = $('#tabelCaret');
                 const listTabbel = $('#tabelDataList');
-
                 listTabbel.slideToggle(400); // Slide toggle animation
                 caretTabel.toggleClass('bi-caret-down-fill bi-caret-up-fill');
             });
 
-            // Dropdown Pengaturan Akun
-            $('#akunToggle').click(function() {
-                const caretAkun = $('#akunCaret');
-                const listAkun = $('#akunList');
-
-                listAkun.slideToggle(400); // Slide up and down animation
-                caretAkun.toggleClass('bi-caret-down-fill bi-caret-up-fill');
-            });
-
-
+            // Floating Button Login
             const $btnLogin = $('#btn-login');
             const $toggleBtn = $('#toggle-btn');
             const $floatingContainer = $('.floating-container');
@@ -184,80 +191,48 @@
             $('#btn-login').click(function(e) {
                 e.preventDefault();
 
-                let targetUrl = window.location.href;
-                if (targetUrl === "{{ route('umum.dashboard') }}") {
-                    // Tutup koneksi EventSource
-                    window.eventSource.close();
-                    console.log("SSE connection closed.");
-                }
-
                 Swal.fire({
                     title: 'Login',
                     html: `
-                    <form id="login-form">
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Alamat Email</label>
-                            <input type="email" class="form-control" id="email" aria-describedby="emailHelp">
-                            <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password">
-                        </div>
-                    </form>
-                `,
+                        <form method="POST" action="{{ route('login') }}" id="login-form">
+                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                            <input type="hidden" id="url" name="url" value="">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Alamat Email</label>
+                                <input type="email" class="form-control" id="email" name="email" aria-describedby="emailHelp">
+                                <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" name="password">
+                            </div>
+                        </form>
+                    `,
                     showCancelButton: true,
                     confirmButtonText: 'Login',
                     preConfirm: () => {
-                        let formData = new FormData();
-                        formData.append('email', document.getElementById('email').value);
-                        formData.append('password', document.getElementById('password').value);
-                        formData.append('url', window.location.pathname);
+                        let email = document.getElementById('email').value;
+                        let password = document.getElementById('password').value;
+                        document.getElementById('url').value = window.location.pathname;
 
-                        formData.forEach((value, key) => {
-                            if (!value || value.trim() === '') {
-                                const fieldName = fieldMessages[key];
-                                if (fieldName) {
-                                    Swal.showValidationMessage(
-                                        `Bagian "${fieldName}" tidak boleh kosong!`);
-                                }
-                                return false;
-                            }
-                        });
-
-                        return formData;
+                        if (!email.trim()) {
+                            Swal.showValidationMessage(
+                                'Bagian "Alamat Email" tidak boleh kosong!');
+                            return false;
+                        }
+                        if (!password.trim()) {
+                            Swal.showValidationMessage('Bagian "Password" tidak boleh kosong!');
+                            return false;
+                        }
+                        return true;
                     }
-
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        let formData = result.value;
-                        $.ajax({
-                            type: "POST",
-                            url: "{{ route('api.login') }}",
-                            headers: {
-                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                            },
-                            data: formData,
-                            contentType: false,
-                            processData: false,
-                            success: function(response) {
-                                window.location.href = response.redirect || '/';
-
-                            },
-                            error: function(xhr, textStatus) {
-                                alert.fire({
-                                    icon: 'error',
-                                    title: xhr
-                                        .responseJSON?.error || xhr.responseJSON
-                                        ?.message ||
-                                        'Terdapat suatu kesalahan. Mohon input ulang.',
-                                });
-                            }
-
-                        });
+                        document.getElementById('login-form').submit();
                     }
                 });
             });
+
         });
     </script>
     <!-- /Script Untuk Dashboard -->
