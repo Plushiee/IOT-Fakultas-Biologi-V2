@@ -78,6 +78,19 @@
         .toggle-btn:hover {
             background-color: #045b08;
         }
+
+        #login-form,
+        #register-form {
+            text-align: start !important;
+        }
+
+        label {
+            font-weight: bold !important;
+        }
+
+        .swal2-actions {
+            margin-top: 0 !important;
+        }
     </style>
 </head>
 

@@ -1,4 +1,4 @@
-@extends('umum.templates.main-umum-utama')
+@extends('admin-master.templates.main-admin-utama')
 @section('title', 'Rumah Hijau Fakultas Biologi | TDS')
 @section('css-extras')
     <!-- Core Bootstrap Table -->
@@ -9,7 +9,7 @@
 @section('content')
     <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ route('umum.dashboard') }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="#">Home</a></li>
             <li class="breadcrumb-item active" aria-current="page">Tabel Udara</li>
         </ol>
     </nav>

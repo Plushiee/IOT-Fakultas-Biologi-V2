@@ -288,6 +288,7 @@ class ApiController extends Controller
             'semester' => 'sometimes|integer|min:1|max:14',
             'foto' => 'sometimes|string',
             'nomor_telepon' => 'sometimes|string|max:20',
+            'password' => 'sometimes|string|min:8|required_with:password',
         ]);
 
         $isMasterAdmin = Auth::user()->role === 'admin-master';
@@ -296,6 +297,14 @@ class ApiController extends Controller
             $validator->after(function ($validator) use ($request) {
                 if ($request->id != Auth::user()->id) {
                     $validator->errors()->add('id', 'ID tidak sesuai dengan pengguna yang sedang login.');
+                }
+            });
+        }
+
+        if ($request->has('password')) {
+            $validator->after(function ($validator) use ($request) {
+                if ($request->id != Auth::user()->id) {
+                    $validator->errors()->add('id', 'Password tidak dapat diubah untuk pengguna lain.');
                 }
             });
         }

@@ -1,4 +1,4 @@
-@extends('admin.templates.main-admin-utama')
+@extends('admin-master.templates.main-admin-utama')
 @section('title', 'Rumah Hijau Fakultas Biologi | Akun')
 @section('css-extras')
     <link rel="stylesheet" href="{{ asset('main/css/dashboard.css') }}">
@@ -26,7 +26,7 @@
 @section('content')
     <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ route('admin.akun-admin.pengaturan') }}">Pengaturan</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('admin-master.akun.pengaturan') }}">Pengaturan</a></li>
             <li class="breadcrumb-item active" aria-current="page">Akun</li>
         </ol>
     </nav>

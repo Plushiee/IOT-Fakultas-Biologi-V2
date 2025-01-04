@@ -348,7 +348,7 @@
                         function(xhr) {
                             alert.fire({
                                 icon: 'error',
-                                title: xhr.responseJSON?.message ||
+                                title:  xhr.responseJSON?.message || xhr.responseJSON?.messages ||
                                     'Error tidak diketahui.',
                             });
                         }

@@ -6,6 +6,14 @@
                     <i class="fa fa-bars" aria-hidden="true"></i>
                 </span>
             </a>
+
+            <span class="navbar-text">
+                Halo, <strong>{{ explode(' ', Auth::user()->nama)[0] }}</strong>!
+
+                <a href="{{ route('admin-master.akun.pengaturan') }}"><img
+                        class="rounded-circle shadow-4-strong ms-1 me-3" alt="avatar2" height="40px"
+                        src="{{ asset('storage/' . Auth::user()->foto) }}"></a>
+            </span>
         </div>
     </nav>
 
@@ -87,7 +95,8 @@
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('admin-master.akun.daftar-admin') }}" class="{{ request()->routeIs('admin-master.akun.daftar-admin*') ? 'active' : '' }}">
+                        <a href="{{ route('admin-master.akun.daftar-admin') }}"
+                            class="{{ request()->routeIs('admin-master.akun.daftar-admin*') ? 'active' : '' }}">
                             Daftar Admin <i class="bi bi-person-plus-fill float-end me-4"></i>
                         </a>
                     </li>

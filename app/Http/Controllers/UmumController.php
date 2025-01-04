@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\TabelPompaModel;
 use App\Models\TabelTDSModel;
 use App\Models\TabelTempHumModel;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
@@ -98,8 +99,22 @@ class UmumController extends Controller
 
     public function dashboardUmum()
     {
-        return view('umum.dashboard-umum');
+        // Ambil hari dan waktu sekarang
+        $currentDay = Carbon::now()->locale('id')->isoFormat('dddd'); // Contoh: "Sabtu"
+        $currentTime = Carbon::now()->format('H:i');
+
+        // Query admin yang berjaga
+        $adminJaga = User::select('nama', 'foto', 'hari', 'jam', 'role')->whereRaw('JSON_CONTAINS(hari, JSON_QUOTE(?))', [$currentDay])
+            ->where(function ($query) use ($currentTime) {
+                $query->whereRaw("TIME(JSON_UNQUOTE(JSON_EXTRACT(jam, '$.s'))) <= ?", [$currentTime])
+                    ->whereRaw("TIME(JSON_UNQUOTE(JSON_EXTRACT(jam, '$.e'))) >= ?", [$currentTime]);
+            })
+            ->get();
+
+        // Kirim data ke view
+        return view('umum.dashboard-umum', compact('adminJaga'));
     }
+
 
     public function rangkuman(Request $request)
     {

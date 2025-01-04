@@ -105,7 +105,7 @@ class AdminMasterController extends Controller
             $pompaStatus->otomatis = false;
             $pompaStatus->suhu = 0;
         }
-        return view('admin-master.dashboard-admin', compact('pompaStatus'));
+        return view('admin-master.dashboardAdmin', compact('pompaStatus'));
     }
 
     public function rangkuman(Request $request)
@@ -200,12 +200,12 @@ class AdminMasterController extends Controller
 
     public function pengaturanAkun()
     {
-        return view('admin-master.akun');
+        return view('admin-master.pengaturanAkun');
     }
 
     public function daftarAdmin()
     {
-        return view('admin-master.daftar-admin');
+        return view('admin-master.daftarAdmin');
     }
 
     public function viewAdmin(Request $request)

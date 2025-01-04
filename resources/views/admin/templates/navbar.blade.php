@@ -6,6 +6,14 @@
                     <i class="fa fa-bars" aria-hidden="true"></i>
                 </span>
             </a>
+
+            <span class="navbar-text">
+                Halo, <strong>{{ explode(' ', Auth::user()->nama)[0] }}</strong>!
+
+                <a href="{{ route('admin-master.akun.pengaturan') }}"><img
+                        class="rounded-circle shadow-4-strong ms-1 me-3" alt="avatar2" height="40px"
+                        src="{{ asset('storage/' . Auth::user()->foto) }}"></a>
+            </span>
         </div>
     </nav>
 

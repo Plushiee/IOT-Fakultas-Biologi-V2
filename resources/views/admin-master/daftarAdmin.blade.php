@@ -42,7 +42,7 @@
             border-color: #008000;
         }
 
-        <style>#password-strength .progress {
+        #password-strength .progress {
             height: 5px;
         }
 
@@ -378,7 +378,6 @@
                                         'text-success');
                             }
                         });
-
                     },
                     preConfirm: () => {
                         let formData = new FormData();
@@ -641,7 +640,18 @@
                 Swal.fire({
                     title: 'Edit Nama Admin',
                     html: `
-                        <label for="nama" class="form-label tambah-akun">Nama *</label>
+                        <style>
+                            .tambah-akun {
+                                font-weight: bold;
+                                text-align: left;
+                                display: block;
+                            }
+
+                            .form-control {
+                                width: 100%;
+                            }
+                        </style>
+                        <label for="nama" class="form-label tambah-akun mt-2">Nama *</label>
                         <input type="text" id="nama" class="form-control" value="${nama}">
                     `,
                     showCancelButton: true,
@@ -709,7 +719,18 @@
                 Swal.fire({
                     title: 'Edit Jabatan Admin',
                     html: `
-                        <label for="jabatan" class="form-label tambah-akun">Jabatan *</label>
+                        <style>
+                            .tambah-akun {
+                                font-weight: bold;
+                                text-align: left;
+                                display: block;
+                            }
+
+                            .form-control {
+                                width: 100%;
+                            }
+                        </style>
+                        <label for="jabatan" class="form-label tambah-akun mt-2">Jabatan *</label>
                             <select id="jabatan" class="form-control">
                                 <option value="" disabled selected>Pilih Jabatan</option>
                                 <option value="admin">Botanist</option>
@@ -790,8 +811,11 @@
                 Swal.fire({
                     title: 'Edit Hari Jaga',
                     html: `
+                        <div class="mt-2">
+                            <p class="mb-2 fw-bold">Pilih hari yang ingin dijadwalkan :</p>
                         <div id="hari-container">
                             ${hariBoxes}
+                        </div>
                         </div>
                     `,
                     showCancelButton: true,
@@ -860,7 +884,21 @@
                 Swal.fire({
                     title: 'Edit Jam Kerja',
                     html: `
-                    <div class="d-flex justify-content-center gap-3">
+                    <style>
+                        .tambah-akun {
+                            font-weight: bold;
+                            text-align: center;
+                            justify-content: center;
+                            display: flex;
+                            gap: 10px;
+                        }
+
+                        .form-control {
+                            width: 100%;
+                        }
+                    </style>
+
+                    <div class="tambah-akun mt-2">
                         <div class="form-group">
                             <label for="start-time" class="form-label">Jam Mulai</label>
                             <input type="text" id="start-time" class="form-control text-center" value="${start}">
