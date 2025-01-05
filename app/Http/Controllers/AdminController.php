@@ -110,13 +110,14 @@ class AdminController extends Controller
             })
             ->get();
 
-        $pompaStatus = TabelPompaModel::latest()->first();
+        $pompaStatus = TabelPompaModel::latest('created_at')->first();
         if ($pompaStatus == null) {
             $pompaStatus = new TabelPompaModel();
             $pompaStatus->status = 'mati';
             $pompaStatus->otomatis = false;
             $pompaStatus->suhu = 0;
         }
+
         return view('admin.dashboard-admin', compact('pompaStatus', 'adminJaga'));
     }
 

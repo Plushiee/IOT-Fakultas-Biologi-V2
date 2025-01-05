@@ -395,14 +395,12 @@
             $btnPlus.on('click', function() {
                 const step = parseInt($inputNumber.attr('step')) || 1;
                 $inputNumber.val((parseInt($inputNumber.val()) || 0) + step);
+                checkTemperature();
             });
 
             $btnMinus.on('click', function() {
                 const step = parseInt($inputNumber.attr('step')) || 1;
                 $inputNumber.val((parseInt($inputNumber.val()) || 0) - step);
-            });
-
-            $($inputNumber).on('change', function() {
                 checkTemperature();
             });
 
@@ -419,12 +417,12 @@
                     pumpStatus = 'mati';
                 }
 
-                if ($('#pump-switch').is(':checked')) {
+                if ($('#pump-switch').is(':checked') & !$('#automatic-switch').is(':checked')) {
                     $('#automatic-switch').prop('disabled', true);
                     pumpStatus = 'nyala';
                     isAutomatic = false;
                     sendPompaStatus(pumpStatus, isAutomatic);
-                } else {
+                } else if (!$('#pump-switch').is(':checked') & !$('#automatic-switch').is(':checked')) {
                     $('#automatic-switch').prop('disabled', false);
                     pumpStatus = 'mati';
                     isAutomatic = false;
@@ -436,27 +434,29 @@
             // Event Switch Otomatis dan Manual
             $('#automatic-switch').change(updateVisibility);
             $('#pump-switch').change(updateVisibility);
+            $('#temperature-input').change(updateVisibility);
 
             // Fungsi: Periksa Suhu dan Otomatisasi
             function checkTemperature() {
                 const temperatureThreshold = parseFloat($inputNumber.val()) || 25.0;
 
                 if ($('#automatic-switch').is(':checked')) {
-                    if (temperature < temperatureThreshold && pumpStatus !== 'nyala') {
+                    if (temperature < temperatureThreshold) {
+                        pumpStatus = 'nyala';
                         sendPompaStatus(pumpStatus, isAutomatic);
-                    } else if (temperature >= temperatureThreshold && pumpStatus !== 'mati') {
+                    } else if (temperature >= temperatureThreshold) {
+                        pumpStatus = 'mati';
                         sendPompaStatus(pumpStatus, isAutomatic);
                     }
-                } else {
-                    sendPompaStatus(pumpStatus, isAutomatic);
                 }
+
+                updatePumpStatus(pumpStatus);
             }
 
             setTimeout(checkTemperature, 1000);
 
             // Fungsi: Kirim Status Pompa
             function sendPompaStatus(status, otomatis = false) {
-                pumpStatus = status;
                 updatePumpStatus(status);
 
                 $.ajax({

@@ -277,9 +277,8 @@
                                     <button class="btn btn-outline-secondary" type="button" id="btn-minus">
                                         <i class="fa fa-minus-circle"></i>
                                     </button>
-                                    <input type="number" class="form-control custom-height"
-                                        value="{{ $pompaStatus->suhu }}" min="0" max="100" step="1"
-                                        id="temperature-input">
+                                    <input type="number" class="form-control custom-height" min="0"
+                                        max="100" step="1" id="temperature-input">
                                     <button class="btn btn-outline-secondary" type="button" id="btn-plus">
                                         <i class="fa fa-plus-circle"></i>
                                     </button>
@@ -313,8 +312,7 @@
                         <div class="col-4 text-end">
                             <div class="container-fluid">
                                 <div class="form-check form-switch float-end">
-                                    <input class="form-check-input" type="checkbox" role="switch" id="pump-switch"
-                                        @if ($pompaStatus->status == 'nyala' && $pompaStatus->otomatis == false) checked @endif>
+                                    <input class="form-check-input" type="checkbox" role="switch" id="pump-switch">
                                 </div>
                             </div>
                         </div>
@@ -339,153 +337,159 @@
     <script src="https://cdn.jsdelivr.net/gh/emn178/chartjs-plugin-labels/src/chartjs-plugin-labels.js" defer></script>
     <script>
         $(document).ready(function() {
-            // Script for Number Input
+            // Input dan Tombol Suhu
             const $inputNumber = $('#temperature-input');
             const $btnPlus = $('#btn-plus');
             const $btnMinus = $('#btn-minus');
 
-            $inputNumber.on('input', function() {
-                const currentValue = parseInt($inputNumber.val());
-                const maxValue = parseInt($inputNumber.attr('max'));
-                const minValue = parseInt($inputNumber.attr('min'));
-                if (currentValue > maxValue) {
-                    $inputNumber.val(maxValue);
-                } else if (currentValue < minValue) {
-                    $inputNumber.val(minValue);
-                }
-            });
+            // Variabel State
+            let isAutomatic = false;
+            let pumpStatus = 'mati';
+            let temperature = 25.0;
+            let first = true;
 
-            $btnPlus.on('click', function() {
-                const currentValue = parseInt($inputNumber.val());
-                const maxValue = parseInt($inputNumber.attr('max'));
-                if (currentValue < maxValue) {
-                    $inputNumber.val(currentValue + parseInt($inputNumber.attr('step')));
+            const status = '{{ $pompaStatus->status }}';
+            const otomatis = '{{ $pompaStatus->otomatis }}';
+
+            const suhu = '{{ $pompaStatus->suhu }}';
+
+            // Dataabse
+            // Sistem Otomatisasi
+            if (status === 'nyala') {
+                pumpStatus = 'nyala';
+                if (otomatis == false) {
+                    $('#pump-switch').prop('checked', true);
+                    $('#temperature-control, #status-pompa').hide();
+                    $('#automatic-switch').prop('checked', false);
+                } else {
+                    $('#pump-switch').prop('checked', false);
+                    $('#pump-control').hide();
+                    $('#automatic-switch').prop('checked', true);
                 }
+            } else {
+                pumpStatus = 'mati';
+                if (otomatis == true) {
+                    $('#pump-switch').prop('checked', false);
+                    $('#pump-control').hide();
+                } else {
+                    $('#temperature-control, #status-pompa').hide();
+                }
+            }
+
+            $('#temperature-input').val(suhu || 0);
+            checkTemperature();
+
+            // Fungsi: Validasi Input Suhu
+            function validateTemperatureInput() {
+                const currentValue = parseInt($inputNumber.val()) || 0;
+                const maxValue = parseInt($inputNumber.attr('max')) || 100;
+                const minValue = parseInt($inputNumber.attr('min')) || 0;
+                if (currentValue > maxValue) $inputNumber.val(maxValue);
+                if (currentValue < minValue) $inputNumber.val(minValue);
+            }
+
+            // Event Input Suhu
+            $inputNumber.on('input', validateTemperatureInput);
+
+            // Tombol Plus/Minus
+            $btnPlus.on('click', function() {
+                const step = parseInt($inputNumber.attr('step')) || 1;
+                $inputNumber.val((parseInt($inputNumber.val()) || 0) + step);
+                checkTemperature();
             });
 
             $btnMinus.on('click', function() {
-                const currentValue = parseInt($inputNumber.val());
-                const minValue = parseInt($inputNumber.attr('min'));
-                if (currentValue > minValue) {
-                    $inputNumber.val(currentValue - parseInt($inputNumber.attr('step')));
-                }
+                const step = parseInt($inputNumber.attr('step')) || 1;
+                $inputNumber.val((parseInt($inputNumber.val()) || 0) - step);
+                checkTemperature();
             });
 
-            // Script untuk kontrol
-            var first = true;
-
-            // API mqtt Pompa
-            let isAutomatic = false;
-            let pumpStatus = 'mati';
-            let temperature = 5.0;
-
+            // Fungsi: Update Visibilitas Kontrol
             function updateVisibility() {
                 if ($('#automatic-switch').is(':checked')) {
-                    if (first) {
-                        first = false;
-                    }
                     $('#pump-control').slideUp();
                     $('#temperature-control, #status-pompa').slideDown();
                     isAutomatic = true;
                 } else {
                     $('#pump-control').slideDown();
                     $('#temperature-control, #status-pompa').slideUp();
-
+                    isAutomatic = false;
+                    pumpStatus = 'mati';
                 }
 
-                if ($('#pump-switch').is(':checked')) {
-                    $('#temperature-control, #status-pompa').slideUp();
+                if ($('#pump-switch').is(':checked') & !$('#automatic-switch').is(':checked')) {
                     $('#automatic-switch').prop('disabled', true);
-                } else {
+                    pumpStatus = 'nyala';
+                    isAutomatic = false;
+                    sendPompaStatus(pumpStatus, isAutomatic);
+                } else if (!$('#pump-switch').is(':checked') & !$('#automatic-switch').is(':checked')) {
                     $('#automatic-switch').prop('disabled', false);
+                    pumpStatus = 'mati';
+                    isAutomatic = false;
+                    sendPompaStatus(pumpStatus, isAutomatic);
                 }
+                checkTemperature();
             }
 
-            // Initial state with a delay to allow elements to render properly before applying effects
-            $('#temperature-control, #status-pompa').hide();
-            setTimeout(updateVisibility, 100);
+            // Event Switch Otomatis dan Manual
+            $('#automatic-switch').change(updateVisibility);
+            $('#pump-switch').change(updateVisibility);
+            $('#temperature-input').change(updateVisibility);
 
-            $('#automatic-switch').change(function() {
-                updateVisibility();
-            });
-
-            $('#pump-switch').change(function() {
-                updateVisibility();
-            });
-
-            $('#automatic-switch').change(function() {
-                isAutomatic = this.checked;
-                if (isAutomatic) {
-                    $('#pump-switch').prop('disabled', true);
-                    checkTemperature();
-                    alert.fire({
-                        icon: 'success',
-                        title: 'Sistem Otomatisasi Sedang Berjalan!'
-                    });
-                } else {
-                    $('#pump-switch').prop('disabled', false);
-                    sendMqttMessage('fakbiologi/pump', 'mati');
-                    sendPompaStatus('mati', false);
-                    alert.fire({
-                        icon: 'warning',
-                        title: 'Sistem Otomatisasi Dimatikan!'
-                    });
-                }
-            });
-
-            $('#pump-switch').change(function() {
-                if (this.checked) {
-                    sendMqttMessage('fakbiologi/pump', 'nyala');
-                    sendPompaStatus('nyala');
-                    alert.fire({
-                        icon: 'success',
-                        title: 'Pompa Dinyalakan!'
-                    });
-                } else {
-                    sendMqttMessage('fakbiologi/pump', 'mati');
-                    sendPompaStatus('mati');
-                    alert.fire({
-                        icon: 'warning',
-                        title: 'Pompa Dimatikan!'
-                    });
-                }
-            });
-
-            function updatePumpStatus(status) {
-                const statusTextElement = $('#pump-status-text');
-
-                if (status === 'nyala') {
-                    statusTextElement.html(
-                        'Menyala&nbsp;&nbsp; <i class="fa fa-circle green-shadow" aria-hidden="true" id="pump-status-icon"></i>'
-                    );
-                } else if (status === 'mati') {
-                    statusTextElement.html(
-                        'Mati&nbsp;&nbsp; <i class="fa fa-circle red-shadow" aria-hidden="true" id="pump-status-icon"></i>'
-                    );
-                }
-            }
-
+            // Fungsi: Periksa Suhu dan Otomatisasi
             function checkTemperature() {
-                if (isAutomatic) {
-                    let temperatureThreshold = parseFloat($('#temperature-input').val());
+                const temperatureThreshold = parseFloat($inputNumber.val()) || 25.0;
 
-                    if (temperature < temperatureThreshold && pumpStatus !== 'nyala') {
-                        sendMqttMessage('fakbiologi/pump', 'nyala');
-                        sendPompaStatus('nyala', true);
-                        pumpStatus = 'nyala'; // Update status pompa setelah mengirim API
-                        updatePumpStatus(pumpStatus);
-                    } else if (temperature >= temperatureThreshold && pumpStatus !== 'mati') {
-                        sendMqttMessage('fakbiologi/pump', 'mati');
-                        sendPompaStatus('mati', true);
-                        pumpStatus = 'mati'; // Update status pompa setelah mengirim API
-                        updatePumpStatus(pumpStatus);
+                if ($('#automatic-switch').is(':checked')) {
+                    if (temperature < temperatureThreshold) {
+                        pumpStatus = 'nyala';
+                        sendPompaStatus(pumpStatus, isAutomatic);
+                    } else if (temperature >= temperatureThreshold) {
+                        pumpStatus = 'mati';
+                        sendPompaStatus(pumpStatus, isAutomatic);
                     }
-
-                    // Hanya panggil kembali jika status masih otomatis
-                    setTimeout(checkTemperature, 2000);
                 }
+
+                updatePumpStatus(pumpStatus);
             }
 
+            setTimeout(checkTemperature, 1000);
+
+            // Fungsi: Kirim Status Pompa
+            function sendPompaStatus(status, otomatis = false) {
+                updatePumpStatus(status);
+
+                $.ajax({
+                    url: `{{ route('api.post.pompa') }}`,
+                    type: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        status: status,
+                        otomatis: otomatis,
+                        suhu: $inputNumber.val()
+                    },
+                    success: function() {
+                        console.log(`Pompa berhasil diatur ke status: ${status}`);
+                    },
+                    error: function(response) {
+                        console.error('Gagal mengirim status pompa:', response.responseText);
+                    }
+                });
+            }
+
+            // Fungsi: Update Status Pompa
+            function updatePumpStatus(status) {
+                const $statusText = $('#pump-status-text');
+                if (status === 'nyala') {
+                    $statusText.html(
+                        'Menyala&nbsp;&nbsp; <i class="fa fa-circle green-shadow"></i>'
+                    );
+                } else {
+                    $statusText.html(
+                        'Mati&nbsp;&nbsp; <i class="fa fa-circle red-shadow"></i>'
+                    );
+                }
+            }
 
             // Function Send Pompa to Database
             function sendPompaStatus(status, otomatis = false) {
@@ -507,26 +511,6 @@
                 });
             }
 
-            // MQTT Send to API
-            function sendMqttMessage(topic, message) {
-                $.ajax({
-                    url: '{{ route('api.send.mqtt') }}',
-                    type: 'POST',
-                    data: {
-                        _token: '{{ csrf_token() }}',
-                        topic: topic,
-                        message: message
-                    },
-                    error: function(response) {
-                        alert.fire({
-                            icon: 'error',
-                            title: 'Gagal mengirim perintah ke MQTT!'
-                        });
-                    }
-                });
-            }
-
-
             // MQTT Udara
             function updateTemperatureHumidity(temperature, humidity) {
                 var displayElement = $("#temperature-humidity-display");
@@ -534,6 +518,8 @@
 
                 var currentTemperature = parseFloat(currentText[0]) || 0;
                 var currentHumidity = parseInt(currentText[1]) || 0;
+
+                this.temperature = temperature;
 
                 if (temperature !== null) {
                     currentTemperature = temperature.toFixed(1) + '° C';
@@ -549,23 +535,6 @@
 
                 displayElement.html(currentTemperature + "<br>" + currentHumidity);
             }
-
-            // MQTT PH
-            // function updatePH(ph) {
-            //     const asamBasa = document.getElementById('asam-basa');
-            //     var displayElement = $("#ph-display");
-            //     displayElement.html(ph);
-            //     if (ph < 7) {
-            //         asamBasa.innerHTML = "Asam";
-            //         asamBasa.style.color = "red";
-            //     } else if (ph > 7) {
-            //         asamBasa.innerHTML = "Basa";
-            //         asamBasa.style.color = "blue";
-            //     } else {
-            //         asamBasa.innerHTML = "Netral";
-            //         asamBasa.style.color = "black";
-            //     }
-            // }
 
             // MQTT Volume
             function updateVolume(tinggi) {
@@ -694,7 +663,8 @@
                 try {
                     const data = JSON.parse(event.data);
 
-                    updateTemperatureHumidity(data.tempHum?.temperature ?? null, data.tempHum?.humidity ??
+                    updateTemperatureHumidity(data.tempHum?.temperature ?? null, data.tempHum
+                        ?.humidity ??
                         null);
                     updateVolume(data.arusAir || 0);
                     updateTDS(data.tds || 0);
@@ -726,7 +696,7 @@
             };
 
             window.addEventListener("beforeunload", () => {
-                window.eventSource.close();
+                eventSource.close();
                 console.log("SSE connection closed.");
             });
         });
