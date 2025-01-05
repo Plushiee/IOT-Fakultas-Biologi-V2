@@ -98,14 +98,26 @@ class AdminMasterController extends Controller
 
     public function dashboardAdmin()
     {
-        $pompaStatus = TabelPompaModel::latest()->first();
+        // Ambil hari dan waktu sekarang
+        $currentDay = Carbon::now()->locale('id')->isoFormat('dddd'); // Contoh: "Sabtu"
+        $currentTime = Carbon::now()->format('H:i');
+
+        // Query admin yang berjaga
+        $adminJaga = User::select('nama', 'foto', 'hari', 'jam', 'role')->whereRaw('JSON_CONTAINS(hari, JSON_QUOTE(?))', [$currentDay])
+            ->where(function ($query) use ($currentTime) {
+                $query->whereRaw("TIME(JSON_UNQUOTE(JSON_EXTRACT(jam, '$.s'))) <= ?", [$currentTime])
+                    ->whereRaw("TIME(JSON_UNQUOTE(JSON_EXTRACT(jam, '$.e'))) >= ?", [$currentTime]);
+            })
+            ->get();
+
+        $pompaStatus = TabelPompaModel::latest('created_at')->first();
         if ($pompaStatus == null) {
             $pompaStatus = new TabelPompaModel();
             $pompaStatus->status = 'mati';
             $pompaStatus->otomatis = false;
             $pompaStatus->suhu = 0;
         }
-        return view('admin-master.dashboardAdmin', compact('pompaStatus'));
+        return view('admin-master.dashboardAdmin', compact('pompaStatus', 'adminJaga'));
     }
 
     public function rangkuman(Request $request)

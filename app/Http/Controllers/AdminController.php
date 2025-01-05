@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\TabelPompaModel;
 use App\Models\TabelTDSModel;
 use App\Models\TabelTempHumModel;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
@@ -97,6 +98,18 @@ class AdminController extends Controller
 
     public function dashboardAdmin()
     {
+        // Ambil hari dan waktu sekarang
+        $currentDay = Carbon::now()->locale('id')->isoFormat('dddd'); // Contoh: "Sabtu"
+        $currentTime = Carbon::now()->format('H:i');
+
+        // Query admin yang berjaga
+        $adminJaga = User::select('nama', 'foto', 'hari', 'jam', 'role')->whereRaw('JSON_CONTAINS(hari, JSON_QUOTE(?))', [$currentDay])
+            ->where(function ($query) use ($currentTime) {
+                $query->whereRaw("TIME(JSON_UNQUOTE(JSON_EXTRACT(jam, '$.s'))) <= ?", [$currentTime])
+                    ->whereRaw("TIME(JSON_UNQUOTE(JSON_EXTRACT(jam, '$.e'))) >= ?", [$currentTime]);
+            })
+            ->get();
+
         $pompaStatus = TabelPompaModel::latest()->first();
         if ($pompaStatus == null) {
             $pompaStatus = new TabelPompaModel();
@@ -104,7 +117,7 @@ class AdminController extends Controller
             $pompaStatus->otomatis = false;
             $pompaStatus->suhu = 0;
         }
-        return view('admin.dashboard-admin', compact('pompaStatus'));
+        return view('admin.dashboard-admin', compact('pompaStatus', 'adminJaga'));
     }
 
     public function rangkuman(Request $request)

@@ -112,9 +112,9 @@
         </div>
     </div>
 
-    <div class="row">
+    <div class="row mb-2">
         <div class="col-12 col-lg-6 mb-3 mb-lg-0">
-            <div class="card">
+            <div class="card shadow">
                 <div class="card-body">
                     <h3 class="card-title">Informasi Air</h3>
                     <div id="carouselExample" class="carousel slide" data-bs-ride="carousel">
@@ -154,9 +154,101 @@
                 </div>
             </div>
         </div>
-        <div class="col-12 col-lg-6">
-            <div class="card">
+        <div class="col-12 col-lg-6 mb-3 mb-lg-0">
+            <div class="card shadow">
                 <div class="card-body">
+                    <h3 class="card-title">Petugas Yang Berjaga</h3>
+                    <div id="carouselPetugas" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-inner">
+                            @isset($adminJaga)
+                                @if (!$adminJaga->isEmpty())
+                                    @foreach ($adminJaga as $admin)
+                                        <div class="carousel-item @if ($loop->first) active @endif">
+                                            <div class="d-flex align-items-center justify-content-center"
+                                                style="height: 300px;">
+                                                <div class="card-body px-1 px-sm-4 mx-1 mx-sm-5 pb-0 pt-2">
+                                                    <div class="card shadow-sm" style="border-radius: 15px;">
+                                                        <div class="card-body p-4">
+                                                            <div class="row">
+                                                                <div
+                                                                    class="col-12 col-sm-3 col-xxl-4 mb-2 mb-sm-0 text-center">
+                                                                    <img src="{{ asset('/storage/' . $admin->foto) }}"
+                                                                        alt="placeholder image" class="img-fluid"
+                                                                        id="photo"
+                                                                        style="height: 70px; border-radius: 10px;" />
+                                                                </div>
+
+                                                                <div class="col-12">
+                                                                    <h3 class="mb-0 text-center">{{ $admin->nama }}</h3>
+                                                                    <p class=" mb-1 pb-1 text-center">
+                                                                        {{ $admin->role === 'admin' ? 'Botanist' : 'Senior Botanist' }}
+                                                                    </p>
+                                                                    <div
+                                                                        class="row d-flex justify-content-start rounded-3 p-1 bg-body-tertiary">
+                                                                        <div class="col-8">
+                                                                            <p class="small text-muted mb-1">
+                                                                                Hari Jaga
+                                                                            </p>
+                                                                            <p class="mb-0 small">
+                                                                                {{ implode(', ', json_decode($admin->hari)) }}
+                                                                            </p>
+                                                                        </div>
+                                                                        <div class="col-4">
+                                                                            <p class="small text-muted mb-1">
+                                                                                Waktu
+                                                                            </p>
+                                                                            <p class="mb-0">
+                                                                                {{ $admin->jam !== null ? json_decode($admin->jam, true)['s'] . ' - ' . json_decode($admin->jam, true)['e'] : '-' }}
+                                                                            </p>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                @else
+                                    <div class="carousel-item active">
+                                        <div class="d-flex align-items-center justify-content-center mx-5"
+                                            style="height: 300px;">
+                                            <div class="card shadow-sm bg-body-tertiary mx-4"
+                                                style="border-radius: 15px; width: 100%; max-width: 500px; height: 200px">
+                                                <div class="card-body p-4">
+                                                    <div class="d-flex align-items-center justify-content-center"
+                                                        style="height: 100%;">
+                                                        <p class="text-center m-0 fw-bold text-muted">Tidak Ada Jadwal Jaga
+                                                            Petugas</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+                            @endisset
+                        </div>
+                        <button class="carousel-control-prev" type="button" data-bs-target="#carouselPetugas"
+                            data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#carouselPetugas"
+                            data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Next</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body shadow">
                     <h3 class="card-title">Kontrol</h3>
                     <div class="row align-items-center">
                         <div class="col-8">
@@ -174,12 +266,12 @@
                         </div>
                     </div>
                     <div class="row align-items-center" id="temperature-control">
-                        <div class="col-6 col-sm-7 col-md-9 col-lg-8 col-xl-6">
+                        <div class="col-6 col-sm-7 col-md-9 col-lg-8 col-xl-10">
                             <div class="container-fluid">
                                 <p class="card-text text-start">Suhu Menyala</p>
                             </div>
                         </div>
-                        <div class="col-6 col-sm-5 col-md-3 col-lg-4 col-xl-6">
+                        <div class="col-6 col-sm-5 col-md-3 col-lg-4 col-xl-2">
                             <div class="container-fluid">
                                 <div class="input-group custom-height p-0 mx-2">
                                     <button class="btn btn-outline-secondary" type="button" id="btn-minus">

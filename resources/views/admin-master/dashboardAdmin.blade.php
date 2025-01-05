@@ -112,9 +112,9 @@
         </div>
     </div>
 
-    <div class="row">
+    <div class="row mb-2">
         <div class="col-12 col-lg-6 mb-3 mb-lg-0">
-            <div class="card">
+            <div class="card shadow">
                 <div class="card-body">
                     <h3 class="card-title">Informasi Air</h3>
                     <div id="carouselExample" class="carousel slide" data-bs-ride="carousel">
@@ -154,9 +154,101 @@
                 </div>
             </div>
         </div>
-        <div class="col-12 col-lg-6">
-            <div class="card">
+        <div class="col-12 col-lg-6 mb-3 mb-lg-0">
+            <div class="card shadow">
                 <div class="card-body">
+                    <h3 class="card-title">Petugas Yang Berjaga</h3>
+                    <div id="carouselPetugas" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-inner">
+                            @isset($adminJaga)
+                                @if (!$adminJaga->isEmpty())
+                                    @foreach ($adminJaga as $admin)
+                                        <div class="carousel-item @if ($loop->first) active @endif">
+                                            <div class="d-flex align-items-center justify-content-center"
+                                                style="height: 300px;">
+                                                <div class="card-body px-1 px-sm-4 mx-1 mx-sm-5 pb-0 pt-2">
+                                                    <div class="card shadow-sm" style="border-radius: 15px;">
+                                                        <div class="card-body p-4">
+                                                            <div class="row">
+                                                                <div
+                                                                    class="col-12 col-sm-3 col-xxl-4 mb-2 mb-sm-0 text-center">
+                                                                    <img src="{{ asset('/storage/' . $admin->foto) }}"
+                                                                        alt="placeholder image" class="img-fluid"
+                                                                        id="photo"
+                                                                        style="height: 70px; border-radius: 10px;" />
+                                                                </div>
+
+                                                                <div class="col-12">
+                                                                    <h3 class="mb-0 text-center">{{ $admin->nama }}</h3>
+                                                                    <p class=" mb-1 pb-1 text-center">
+                                                                        {{ $admin->role === 'admin' ? 'Botanist' : 'Senior Botanist' }}
+                                                                    </p>
+                                                                    <div
+                                                                        class="row d-flex justify-content-start rounded-3 p-1 bg-body-tertiary">
+                                                                        <div class="col-8">
+                                                                            <p class="small text-muted mb-1">
+                                                                                Hari Jaga
+                                                                            </p>
+                                                                            <p class="mb-0 small">
+                                                                                {{ implode(', ', json_decode($admin->hari)) }}
+                                                                            </p>
+                                                                        </div>
+                                                                        <div class="col-4">
+                                                                            <p class="small text-muted mb-1">
+                                                                                Waktu
+                                                                            </p>
+                                                                            <p class="mb-0">
+                                                                                {{ $admin->jam !== null ? json_decode($admin->jam, true)['s'] . ' - ' . json_decode($admin->jam, true)['e'] : '-' }}
+                                                                            </p>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                @else
+                                    <div class="carousel-item active">
+                                        <div class="d-flex align-items-center justify-content-center mx-5"
+                                            style="height: 300px;">
+                                            <div class="card shadow-sm bg-body-tertiary mx-4"
+                                                style="border-radius: 15px; width: 100%; max-width: 500px; height: 200px">
+                                                <div class="card-body p-4">
+                                                    <div class="d-flex align-items-center justify-content-center"
+                                                        style="height: 100%;">
+                                                        <p class="text-center m-0 fw-bold text-muted">Tidak Ada Jadwal Jaga
+                                                            Petugas</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+                            @endisset
+                        </div>
+                        <button class="carousel-control-prev" type="button" data-bs-target="#carouselPetugas"
+                            data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#carouselPetugas"
+                            data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Next</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body shadow">
                     <h3 class="card-title">Kontrol</h3>
                     <div class="row align-items-center">
                         <div class="col-8">
@@ -174,20 +266,19 @@
                         </div>
                     </div>
                     <div class="row align-items-center" id="temperature-control">
-                        <div class="col-6 col-sm-7 col-md-9 col-lg-8 col-xl-6">
+                        <div class="col-6 col-sm-7 col-md-9 col-lg-8 col-xl-10">
                             <div class="container-fluid">
                                 <p class="card-text text-start">Suhu Menyala</p>
                             </div>
                         </div>
-                        <div class="col-6 col-sm-5 col-md-3 col-lg-4 col-xl-6">
+                        <div class="col-6 col-sm-5 col-md-3 col-lg-4 col-xl-2">
                             <div class="container-fluid">
                                 <div class="input-group custom-height p-0 mx-2">
                                     <button class="btn btn-outline-secondary" type="button" id="btn-minus">
                                         <i class="fa fa-minus-circle"></i>
                                     </button>
-                                    <input type="number" class="form-control custom-height"
-                                        value="{{ $pompaStatus->suhu }}" min="0" max="100" step="1"
-                                        id="temperature-input">
+                                    <input type="number" class="form-control custom-height" min="0"
+                                        max="100" step="1" id="temperature-input">
                                     <button class="btn btn-outline-secondary" type="button" id="btn-plus">
                                         <i class="fa fa-plus-circle"></i>
                                     </button>
@@ -221,8 +312,7 @@
                         <div class="col-4 text-end">
                             <div class="container-fluid">
                                 <div class="form-check form-switch float-end">
-                                    <input class="form-check-input" type="checkbox" role="switch" id="pump-switch"
-                                        @if ($pompaStatus->status == 'nyala' && $pompaStatus->otomatis == false) checked @endif>
+                                    <input class="form-check-input" type="checkbox" role="switch" id="pump-switch">
                                 </div>
                             </div>
                         </div>
@@ -247,153 +337,159 @@
     <script src="https://cdn.jsdelivr.net/gh/emn178/chartjs-plugin-labels/src/chartjs-plugin-labels.js" defer></script>
     <script>
         $(document).ready(function() {
-            // Script for Number Input
+            // Input dan Tombol Suhu
             const $inputNumber = $('#temperature-input');
             const $btnPlus = $('#btn-plus');
             const $btnMinus = $('#btn-minus');
 
-            $inputNumber.on('input', function() {
-                const currentValue = parseInt($inputNumber.val());
-                const maxValue = parseInt($inputNumber.attr('max'));
-                const minValue = parseInt($inputNumber.attr('min'));
-                if (currentValue > maxValue) {
-                    $inputNumber.val(maxValue);
-                } else if (currentValue < minValue) {
-                    $inputNumber.val(minValue);
-                }
-            });
+            // Variabel State
+            let isAutomatic = false;
+            let pumpStatus = 'mati';
+            let temperature = 25.0;
+            let first = true;
 
-            $btnPlus.on('click', function() {
-                const currentValue = parseInt($inputNumber.val());
-                const maxValue = parseInt($inputNumber.attr('max'));
-                if (currentValue < maxValue) {
-                    $inputNumber.val(currentValue + parseInt($inputNumber.attr('step')));
+            const status = '{{ $pompaStatus->status }}';
+            const otomatis = '{{ $pompaStatus->otomatis }}';
+
+            const suhu = '{{ $pompaStatus->suhu }}';
+
+            // Dataabse
+            // Sistem Otomatisasi
+            if (status === 'nyala') {
+                pumpStatus = 'nyala';
+                if (otomatis == false) {
+                    $('#pump-switch').prop('checked', true);
+                    $('#temperature-control, #status-pompa').hide();
+                    $('#automatic-switch').prop('checked', false);
+                } else {
+                    $('#pump-switch').prop('checked', false);
+                    $('#pump-control').hide();
+                    $('#automatic-switch').prop('checked', true);
                 }
+            } else {
+                pumpStatus = 'mati';
+                if (otomatis == true) {
+                    $('#pump-switch').prop('checked', false);
+                    $('#pump-control').hide();
+                } else {
+                    $('#temperature-control, #status-pompa').hide();
+                }
+            }
+
+            $('#temperature-input').val(suhu || 0);
+            checkTemperature();
+
+            // Fungsi: Validasi Input Suhu
+            function validateTemperatureInput() {
+                const currentValue = parseInt($inputNumber.val()) || 0;
+                const maxValue = parseInt($inputNumber.attr('max')) || 100;
+                const minValue = parseInt($inputNumber.attr('min')) || 0;
+                if (currentValue > maxValue) $inputNumber.val(maxValue);
+                if (currentValue < minValue) $inputNumber.val(minValue);
+            }
+
+            // Event Input Suhu
+            $inputNumber.on('input', validateTemperatureInput);
+
+            // Tombol Plus/Minus
+            $btnPlus.on('click', function() {
+                const step = parseInt($inputNumber.attr('step')) || 1;
+                $inputNumber.val((parseInt($inputNumber.val()) || 0) + step);
             });
 
             $btnMinus.on('click', function() {
-                const currentValue = parseInt($inputNumber.val());
-                const minValue = parseInt($inputNumber.attr('min'));
-                if (currentValue > minValue) {
-                    $inputNumber.val(currentValue - parseInt($inputNumber.attr('step')));
-                }
+                const step = parseInt($inputNumber.attr('step')) || 1;
+                $inputNumber.val((parseInt($inputNumber.val()) || 0) - step);
             });
 
-            // Script untuk kontrol
-            var first = true;
+            $($inputNumber).on('change', function() {
+                checkTemperature();
+            });
 
-            // API mqtt Pompa
-            let isAutomatic = false;
-            let pumpStatus = 'mati';
-            let temperature = 5.0;
-
+            // Fungsi: Update Visibilitas Kontrol
             function updateVisibility() {
                 if ($('#automatic-switch').is(':checked')) {
-                    if (first) {
-                        first = false;
-                    }
                     $('#pump-control').slideUp();
                     $('#temperature-control, #status-pompa').slideDown();
                     isAutomatic = true;
                 } else {
                     $('#pump-control').slideDown();
                     $('#temperature-control, #status-pompa').slideUp();
-
+                    isAutomatic = false;
+                    pumpStatus = 'mati';
                 }
 
                 if ($('#pump-switch').is(':checked')) {
-                    $('#temperature-control, #status-pompa').slideUp();
                     $('#automatic-switch').prop('disabled', true);
+                    pumpStatus = 'nyala';
+                    isAutomatic = false;
+                    sendPompaStatus(pumpStatus, isAutomatic);
                 } else {
                     $('#automatic-switch').prop('disabled', false);
+                    pumpStatus = 'mati';
+                    isAutomatic = false;
+                    sendPompaStatus(pumpStatus, isAutomatic);
                 }
+                checkTemperature();
             }
 
-            // Initial state with a delay to allow elements to render properly before applying effects
-            $('#temperature-control, #status-pompa').hide();
-            setTimeout(updateVisibility, 100);
+            // Event Switch Otomatis dan Manual
+            $('#automatic-switch').change(updateVisibility);
+            $('#pump-switch').change(updateVisibility);
 
-            $('#automatic-switch').change(function() {
-                updateVisibility();
-            });
-
-            $('#pump-switch').change(function() {
-                updateVisibility();
-            });
-
-            $('#automatic-switch').change(function() {
-                isAutomatic = this.checked;
-                if (isAutomatic) {
-                    $('#pump-switch').prop('disabled', true);
-                    checkTemperature();
-                    alert.fire({
-                        icon: 'success',
-                        title: 'Sistem Otomatisasi Sedang Berjalan!'
-                    });
-                } else {
-                    $('#pump-switch').prop('disabled', false);
-                    sendMqttMessage('fakbiologi/pump', 'mati');
-                    sendPompaStatus('mati', false);
-                    alert.fire({
-                        icon: 'warning',
-                        title: 'Sistem Otomatisasi Dimatikan!'
-                    });
-                }
-            });
-
-            $('#pump-switch').change(function() {
-                if (this.checked) {
-                    sendMqttMessage('fakbiologi/pump', 'nyala');
-                    sendPompaStatus('nyala');
-                    alert.fire({
-                        icon: 'success',
-                        title: 'Pompa Dinyalakan!'
-                    });
-                } else {
-                    sendMqttMessage('fakbiologi/pump', 'mati');
-                    sendPompaStatus('mati');
-                    alert.fire({
-                        icon: 'warning',
-                        title: 'Pompa Dimatikan!'
-                    });
-                }
-            });
-
-            function updatePumpStatus(status) {
-                const statusTextElement = $('#pump-status-text');
-
-                if (status === 'nyala') {
-                    statusTextElement.html(
-                        'Menyala&nbsp;&nbsp; <i class="fa fa-circle green-shadow" aria-hidden="true" id="pump-status-icon"></i>'
-                    );
-                } else if (status === 'mati') {
-                    statusTextElement.html(
-                        'Mati&nbsp;&nbsp; <i class="fa fa-circle red-shadow" aria-hidden="true" id="pump-status-icon"></i>'
-                    );
-                }
-            }
-
+            // Fungsi: Periksa Suhu dan Otomatisasi
             function checkTemperature() {
-                if (isAutomatic) {
-                    let temperatureThreshold = parseFloat($('#temperature-input').val());
+                const temperatureThreshold = parseFloat($inputNumber.val()) || 25.0;
 
+                if ($('#automatic-switch').is(':checked')) {
                     if (temperature < temperatureThreshold && pumpStatus !== 'nyala') {
-                        sendMqttMessage('fakbiologi/pump', 'nyala');
-                        sendPompaStatus('nyala', true);
-                        pumpStatus = 'nyala'; // Update status pompa setelah mengirim API
-                        updatePumpStatus(pumpStatus);
+                        sendPompaStatus(pumpStatus, isAutomatic);
                     } else if (temperature >= temperatureThreshold && pumpStatus !== 'mati') {
-                        sendMqttMessage('fakbiologi/pump', 'mati');
-                        sendPompaStatus('mati', true);
-                        pumpStatus = 'mati'; // Update status pompa setelah mengirim API
-                        updatePumpStatus(pumpStatus);
+                        sendPompaStatus(pumpStatus, isAutomatic);
                     }
-
-                    // Hanya panggil kembali jika status masih otomatis
-                    setTimeout(checkTemperature, 2000);
+                } else {
+                    sendPompaStatus(pumpStatus, isAutomatic);
                 }
             }
 
+            setTimeout(checkTemperature, 1000);
+
+            // Fungsi: Kirim Status Pompa
+            function sendPompaStatus(status, otomatis = false) {
+                pumpStatus = status;
+                updatePumpStatus(status);
+
+                $.ajax({
+                    url: `{{ route('api.post.pompa') }}`,
+                    type: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        status: status,
+                        otomatis: otomatis,
+                        suhu: $inputNumber.val()
+                    },
+                    success: function() {
+                        console.log(`Pompa berhasil diatur ke status: ${status}`);
+                    },
+                    error: function(response) {
+                        console.error('Gagal mengirim status pompa:', response.responseText);
+                    }
+                });
+            }
+
+            // Fungsi: Update Status Pompa
+            function updatePumpStatus(status) {
+                const $statusText = $('#pump-status-text');
+                if (status === 'nyala') {
+                    $statusText.html(
+                        'Menyala&nbsp;&nbsp; <i class="fa fa-circle green-shadow"></i>'
+                    );
+                } else {
+                    $statusText.html(
+                        'Mati&nbsp;&nbsp; <i class="fa fa-circle red-shadow"></i>'
+                    );
+                }
+            }
 
             // Function Send Pompa to Database
             function sendPompaStatus(status, otomatis = false) {
@@ -415,26 +511,6 @@
                 });
             }
 
-            // MQTT Send to API
-            function sendMqttMessage(topic, message) {
-                $.ajax({
-                    url: '{{ route('api.send.mqtt') }}',
-                    type: 'POST',
-                    data: {
-                        _token: '{{ csrf_token() }}',
-                        topic: topic,
-                        message: message
-                    },
-                    error: function(response) {
-                        alert.fire({
-                            icon: 'error',
-                            title: 'Gagal mengirim perintah ke MQTT!'
-                        });
-                    }
-                });
-            }
-
-
             // MQTT Udara
             function updateTemperatureHumidity(temperature, humidity) {
                 var displayElement = $("#temperature-humidity-display");
@@ -442,6 +518,8 @@
 
                 var currentTemperature = parseFloat(currentText[0]) || 0;
                 var currentHumidity = parseInt(currentText[1]) || 0;
+
+                this.temperature = temperature;
 
                 if (temperature !== null) {
                     currentTemperature = temperature.toFixed(1) + '° C';
@@ -457,23 +535,6 @@
 
                 displayElement.html(currentTemperature + "<br>" + currentHumidity);
             }
-
-            // MQTT PH
-            // function updatePH(ph) {
-            //     const asamBasa = document.getElementById('asam-basa');
-            //     var displayElement = $("#ph-display");
-            //     displayElement.html(ph);
-            //     if (ph < 7) {
-            //         asamBasa.innerHTML = "Asam";
-            //         asamBasa.style.color = "red";
-            //     } else if (ph > 7) {
-            //         asamBasa.innerHTML = "Basa";
-            //         asamBasa.style.color = "blue";
-            //     } else {
-            //         asamBasa.innerHTML = "Netral";
-            //         asamBasa.style.color = "black";
-            //     }
-            // }
 
             // MQTT Volume
             function updateVolume(tinggi) {
@@ -602,7 +663,8 @@
                 try {
                     const data = JSON.parse(event.data);
 
-                    updateTemperatureHumidity(data.tempHum?.temperature ?? null, data.tempHum?.humidity ??
+                    updateTemperatureHumidity(data.tempHum?.temperature ?? null, data.tempHum
+                        ?.humidity ??
                         null);
                     updateVolume(data.arusAir || 0);
                     updateTDS(data.tds || 0);
