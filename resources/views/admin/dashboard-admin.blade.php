@@ -442,9 +442,11 @@
 
                 if ($('#automatic-switch').is(':checked')) {
                     if (temperature < temperatureThreshold) {
+                        isAutomatic = true;
                         pumpStatus = 'nyala';
                         sendPompaStatus(pumpStatus, isAutomatic);
                     } else if (temperature >= temperatureThreshold) {
+                        isAutomatic = true;
                         pumpStatus = 'mati';
                         sendPompaStatus(pumpStatus, isAutomatic);
                     }
