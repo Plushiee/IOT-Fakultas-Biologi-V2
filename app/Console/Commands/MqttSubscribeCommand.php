@@ -56,7 +56,6 @@ class MqttSubscribeCommand extends Command
                     'fakbiologi/TDS',
                     'fakbiologi/ping',
                     'fakbiologi/esp8266',
-                    'fakbiologi/error_1',
                     'fakbiologi/PH',
                 ];
 
@@ -121,7 +120,6 @@ class MqttSubscribeCommand extends Command
             $this->koleksiData['tempHum']['temperature'],
             $this->koleksiData['tempHum']['humidity'],
             $this->koleksiData['ping'],
-            $this->koleksiData['status']
         );
     }
 
@@ -167,6 +165,7 @@ class MqttSubscribeCommand extends Command
                 break;
             case 'fakbiologi/esp8266':
                 $this->koleksiData['status'] = $message;
+                Log::info('Status: ' . $message);
                 break;
         }
     }

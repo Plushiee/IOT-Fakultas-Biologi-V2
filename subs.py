@@ -29,7 +29,7 @@ def connect_mqtt() -> mqtt_client:
         else:
             print("Failed to connect, return code %d\n", rc)
 
-    client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION1, client_id)
+    client = mqtt_client.Client(client_id)
     client.username_pw_set(username, password)
     client.on_connect = on_connect
     client.connect(broker, port)
@@ -51,8 +51,8 @@ def publish(client):
     while True:
         for topic, value in current_values.items():
             if topic == topic7:
-                # Jika topik adalah topic7, nilai tetap 1
-                msg = "1"
+                # Jika topik adalah `topic7`, maka nilai akan berubah dari 1 ke 0 atau sebaliknya
+                new_value = 0 if value == 1 else 1
             else:
                 # Perubahan nilai maksimal 2% dari nilai saat ini
                 max_change_percentage = 0.02  # 2%
