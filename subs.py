@@ -50,28 +50,32 @@ def publish(client):
 
     while True:
         for topic, value in current_values.items():
-            # Perubahan nilai maksimal 2% dari nilai saat ini
-            max_change_percentage = 0.02  # 2%
-            change = value * random.uniform(-max_change_percentage, max_change_percentage)
-            new_value = value + change
-
-            # Update nilai baru ke dalam dictionary
-            current_values[topic] = new_value
-
-            # Format nilai sesuai dengan tipe data (float atau int)
-            if topic in [topic1, topic3, topic4, topic5, topic6, topic10]:
-                msg = f"{new_value:.2f}"  # Float dengan 2 desimal
+            if topic == topic7:
+                # Jika topik adalah topic7, nilai tetap 1
+                msg = "1"
             else:
-                msg = f"{int(new_value)}"  # Integer
+                # Perubahan nilai maksimal 2% dari nilai saat ini
+                max_change_percentage = 0.02  # 2%
+                change = value * random.uniform(-max_change_percentage, max_change_percentage)
+                new_value = value + change
 
-            # Kirim nilai ke broker MQTT
-            result = client.publish(topic, msg)
-            status = result[0]
-            if status != 0:
-                print(f"Failed to send message to topic {topic}")
-            #     print(f"Send `{msg}` to topic `{topic}`")
-            # else:
-            #     print(f"Failed to send message to topic {topic}")
+                # Update nilai baru ke dalam dictionary
+                current_values[topic] = new_value
+
+                # Format nilai sesuai dengan tipe data (float atau int)
+                if topic in [topic1, topic3, topic4, topic5, topic6, topic10]:
+                    msg = f"{new_value:.2f}"  # Float dengan 2 desimal
+                else:
+                    msg = f"{int(new_value)}"  # Integer
+
+                # Kirim nilai ke broker MQTT
+                result = client.publish(topic, msg)
+                status = result[0]
+                if status != 0:
+                    print(f"Failed to send message to topic {topic}")
+                #     print(f"Send `{msg}` to topic `{topic}`")
+                # else:
+                #     print(f"Failed to send message to topic {topic}")
 
         time.sleep(2)  # Mengirim data setiap 2 detik
 
