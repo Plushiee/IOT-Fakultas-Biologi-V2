@@ -54,9 +54,8 @@ class MqttSubscribeCommand extends Command
                     'fakbiologi/temperatureDHT',
                     'fakbiologi/TDS',
                     'fakbiologi/ping',
-                    'fakbiologi/esp8266_1',
+                    'fakbiologi/esp8266',
                     'fakbiologi/error_1',
-                    'fakbiologi/esp8266_2',
                     'fakbiologi/PH',
                 ];
 
@@ -135,6 +134,7 @@ class MqttSubscribeCommand extends Command
                 'humidity' => null,
             ],
             'ping' => null,
+            'status' => null,
         ];
     }
 
@@ -161,6 +161,9 @@ class MqttSubscribeCommand extends Command
                 break;
             case 'fakbiologi/ping':
                 TabelPingModel::create(['id_area' => 1, 'ping' => $message]);
+                break;
+            case 'fakbiologi/esp8266':
+                $this->koleksiData['status'] = $message;
                 break;
         }
     }

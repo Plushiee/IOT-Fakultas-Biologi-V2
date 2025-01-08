@@ -521,12 +521,10 @@
                 var currentTemperature = parseFloat(currentText[0]) || 0;
                 var currentHumidity = parseInt(currentText[1]) || 0;
 
-                this.temperature = temperature;
-
                 if (temperature !== null) {
-                    currentTemperature = temperature.toFixed(1) + '° C';
+                    currentTemperature = temperature + '° C';
                 } else {
-                    currentTemperature = currentTemperature.toFixed(1) + '° C';
+                    currentTemperature = currentTemperature + '° C';
                 }
 
                 if (humidity !== null) {
@@ -536,6 +534,20 @@
                 }
 
                 displayElement.html(currentTemperature + "<br>" + currentHumidity);
+            }
+
+            // MQTT Status
+            function updateStatus(status) {
+                var displayElement = $("#status");
+                if (status == 1) {
+                    displayElement.html(
+                        "<i class='fa fa-circle green-shadow' aria-hidden='true' id='iot-status-icon'></i>&nbsp;&nbsp; Online"
+                    );
+                } else {
+                    displayElement.html(
+                        "<i class='fa fa-circle red-shadow' aria-hidden='true' id='iot-status-icon'></i>&nbsp;&nbsp; Offline"
+                    );
+                }
             }
 
             // MQTT Volume
@@ -621,11 +633,8 @@
                     }
                 }
             };
-
-            window.onload = function() {
-                var ctx = document.getElementById('chart').getContext('2d');
-                window.myGauge = new Chart(ctx, config);
-            };
+            var ctx = document.getElementById('chart').getContext('2d');
+            window.myGauge = new Chart(ctx, config);
 
             setInterval(() => {
                 const now = new Date();
@@ -665,11 +674,11 @@
                 try {
                     const data = JSON.parse(event.data);
 
-                    updateTemperatureHumidity(data.tempHum?.temperature ?? null, data.tempHum
-                        ?.humidity ??
+                    updateTemperatureHumidity(data.tempHum?.temperature ?? null, data.tempHum?.humidity ??
                         null);
                     updateVolume(data.arusAir || 0);
                     updateTDS(data.tds || 0);
+                    updateStatus(data.status || 0);
 
                     window.myGauge.data.datasets[0].value = data.arusAir || 0;
                     window.myGauge.update();
@@ -686,7 +695,7 @@
                 console.error("SSE error:", error);
                 window.eventSource.close(); // Close the connection
                 setTimeout(() => {
-                    window.eventSource = new EventSource("{{ route('api.get.sse') }}");
+                    window.eventSource = new window.EventSource("{{ route('api.get.sse') }}");
                     retryTimeout = Math.min(retryTimeout * 2,
                         10000);
                 }, retryTimeout);
@@ -698,7 +707,7 @@
             };
 
             window.addEventListener("beforeunload", () => {
-                eventSource.close();
+                window.eventSource.close();
                 console.log("SSE connection closed.");
             });
         });
