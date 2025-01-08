@@ -289,7 +289,7 @@
                 var displayElement = $("#status");
                 if (status == 1) {
                     displayElement.html(
-                        "<i class='fa fa-circle green-shadow mb-4' aria-hidden='true' id='iot-status-icon'></i><br>ONLINR"
+                        "<i class='fa fa-circle green-shadow mb-4' aria-hidden='true' id='iot-status-icon'></i><br>ONLINE"
                     );
                 } else {
                     displayElement.html(
