@@ -32,6 +32,7 @@ class MqttSubscribeCommand extends Command
             'humidity' => null,
         ],
         'ping' => null,
+        'status' => null,
     ];
 
     public function __construct()
