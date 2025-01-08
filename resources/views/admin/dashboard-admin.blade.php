@@ -61,8 +61,8 @@
                                 <div class="card-body card-body-carousel">
                                     <h5 class="card-title mb-3">Status Mesin</h5>
                                     <div class="text-center my-4">
-                                        <h1 id="status"><i class="fa fa-circle red-shadow" aria-hidden="true"
-                                                id="iot-status-icon"></i>&nbsp;&nbsp; Offline</h1>
+                                        <h4 id="status" class="text-center"><i class="fa fa-circle red-shadow mb-4" aria-hidden="true"
+                                            id="iot-status-icon"></i>OFFLINE</h4>
                                     </div>
                                 </div>
                             </div>
@@ -168,7 +168,7 @@
                                                 style="height: 300px;">
                                                 <div class="card-body px-1 px-sm-4 mx-1 mx-sm-5 pb-0 pt-2">
                                                     <div class="card shadow-sm" style="border-radius: 15px;">
-                                                        <div class="card-body p-4">
+                                                        <div class="card-body px-3 px-md-4 py-2 py-md-4">
                                                             <div class="row">
                                                                 <div
                                                                     class="col-12 col-sm-3 col-xxl-4 mb-2 mb-sm-0 text-center">
@@ -541,11 +541,11 @@
                 var displayElement = $("#status");
                 if (status == 1) {
                     displayElement.html(
-                        "<i class='fa fa-circle green-shadow' aria-hidden='true' id='iot-status-icon'></i>&nbsp;&nbsp; Online"
+                        "<i class='fa fa-circle green-shadow mb-4' aria-hidden='true' id='iot-status-icon'></i>&nbsp;&nbsp; ONLINE"
                     );
                 } else {
                     displayElement.html(
-                        "<i class='fa fa-circle red-shadow' aria-hidden='true' id='iot-status-icon'></i>&nbsp;&nbsp; Offline"
+                        "<i class='fa fa-circle red-shadow mb-4' aria-hidden='true' id='iot-status-icon'></i>&nbsp;&nbsp; OFFLINE"
                     );
                 }
             }

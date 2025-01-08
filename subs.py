@@ -44,38 +44,35 @@ def publish(client):
         topic4: random.uniform(23.0, 27.0),
         topic5: random.uniform(900.0, 1200.0),
         topic6: random.uniform(80.0, 100.0),
-        topic7: 1,
+        topic7: "1",
         topic10: random.uniform(8.0, 12.0),
     }
 
     while True:
         for topic, value in current_values.items():
             if topic == topic7:
-                # Jika topik adalah `topic7`, maka nilai akan berubah dari 1 ke 0 atau sebaliknya
-                new_value = 0 if value == 1 else 1
+                msg = "1"  # Langsung tetapkan msg sebagai "1"
             else:
-                # Perubahan nilai maksimal 2% dari nilai saat ini
                 max_change_percentage = 0.02  # 2%
                 change = value * random.uniform(-max_change_percentage, max_change_percentage)
                 new_value = value + change
-
-                # Update nilai baru ke dalam dictionary
                 current_values[topic] = new_value
 
-                # Format nilai sesuai dengan tipe data (float atau int)
+                # Format nilai
                 if topic in [topic1, topic3, topic4, topic5, topic6, topic10]:
-                    msg = f"{new_value:.2f}"  # Float dengan 2 desimal
+                    msg = f"{new_value:.2f}"
                 else:
-                    msg = f"{int(new_value)}"  # Integer
+                    msg = f"{int(new_value)}"
 
-                # Kirim nilai ke broker MQTT
-                result = client.publish(topic, msg)
-                status = result[0]
-                if status != 0:
-                    print(f"Failed to send message to topic {topic}")
-                #     print(f"Send `{msg}` to topic `{topic}`")
-                # else:
-                #     print(f"Failed to send message to topic {topic}")
+            # Kirim nilai ke broker MQTT
+            result = client.publish(topic, msg)
+            status = result[0]
+
+            if status != 0:
+                # print(f"Send `{msg}` to topic `{topic}`")
+                print(f"Failed to send message to topic {topic}")
+            # else:
+            #     print(f"Failed to send message to topic {topic}")
 
         time.sleep(2)  # Mengirim data setiap 2 detik
 
@@ -90,7 +87,7 @@ def write_to_file(message):
 
 def run():
     client = connect_mqtt()
-    client.on_message = on_message
+    # client.on_message = on_message
     client.loop_start()
     publish(client)
 
