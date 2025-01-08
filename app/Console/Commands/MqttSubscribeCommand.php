@@ -94,6 +94,7 @@ class MqttSubscribeCommand extends Command
             'fakbiologi/humidityDHT' => $this->koleksiData['tempHum']['humidity'] = $message,
             'fakbiologi/temperatureDHT' => $this->koleksiData['tempHum']['temperature'] = $message,
             'fakbiologi/ping' => $this->koleksiData['ping'] = $message,
+            'fakbiologi/esp8266' => $this->koleksiData['status'] = $message,
             default => null,
         };
 
@@ -118,7 +119,8 @@ class MqttSubscribeCommand extends Command
             $this->koleksiData['ph'],
             $this->koleksiData['tempHum']['temperature'],
             $this->koleksiData['tempHum']['humidity'],
-            $this->koleksiData['ping']
+            $this->koleksiData['ping'],
+            $this->koleksiData['status']
         );
     }
 
