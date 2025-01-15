@@ -61,8 +61,8 @@
                                 <div class="card-body card-body-carousel">
                                     <h5 class="card-title mb-3">Status Mesin</h5>
                                     <div class="text-center my-4">
-                                        <h4 id="status" class="text-center"><i class="fa fa-circle red-shadow mb-4" aria-hidden="true"
-                                            id="iot-status-icon"></i>OFFLINE</h4>
+                                        <h4 id="status" class="text-center"><i class="fa fa-circle red-shadow mb-4"
+                                                aria-hidden="true" id="iot-status-icon"></i>OFFLINE</h4>
                                     </div>
                                 </div>
                             </div>
@@ -345,7 +345,7 @@
             // Variabel State
             let isAutomatic = false;
             let pumpStatus = 'mati';
-            let temperature = 25.0;
+            let temperatureThreshold = 25.0;
             let first = true;
 
             const status = '{{ $pompaStatus->status }}';
@@ -438,14 +438,14 @@
 
             // Fungsi: Periksa Suhu dan Otomatisasi
             function checkTemperature() {
-                const temperatureThreshold = parseFloat($inputNumber.val()) || 25.0;
+                let temperatureUser = parseFloat($inputNumber.val()) || 25.0;
 
                 if ($('#automatic-switch').is(':checked')) {
-                    if (temperature < temperatureThreshold) {
+                    if (temperatureThreshold < temperatureUser) {
                         isAutomatic = true;
                         pumpStatus = 'nyala';
                         sendPompaStatus(pumpStatus, isAutomatic);
-                    } else if (temperature >= temperatureThreshold) {
+                    } else if (temperatureThreshold >= temperatureUser) {
                         isAutomatic = true;
                         pumpStatus = 'mati';
                         sendPompaStatus(pumpStatus, isAutomatic);
@@ -527,6 +527,8 @@
                     currentTemperature = currentTemperature + '° C';
                 }
 
+                temperatureThreshold = parseFloat(temperature);
+
                 if (humidity !== null) {
                     currentHumidity = humidity + '%';
                 } else {
@@ -534,6 +536,7 @@
                 }
 
                 displayElement.html(currentTemperature + "<br>" + currentHumidity);
+                checkTemperature();
             }
 
             // MQTT Status
