@@ -7,7 +7,7 @@
 /vendor
 .cache
 .env
-.error.log
+error.log
 .env.backup
 .env.production
 .phpactor.json
