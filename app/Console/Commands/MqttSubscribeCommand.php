@@ -45,9 +45,7 @@ class MqttSubscribeCommand extends Command
     {
         while (true) {
             try {
-                $mqtt = MQTT::connection([
-                    'max_inflight_messages' => 100, // Tingkatkan batas pesan yang sedang diproses
-                ]);
+                $mqtt = MQTT::connection();
 
                 // Array of topics to subscribe
                 $topics = [
